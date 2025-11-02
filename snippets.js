@@ -17,7 +17,7 @@
  * - 支持自动回退机制
  * - 优选域名自动配置
  */
-
+//https://github.com/jackrun123/cf_snippets_proxy
 // ============ 导入 Cloudflare Workers API ============
 
 // 导入 socket 连接模块，用于建立 TCP/UDP 连接
