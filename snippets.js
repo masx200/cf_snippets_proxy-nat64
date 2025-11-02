@@ -3,6 +3,8 @@ import { connect } from "cloudflare:sockets";
 const UUID = "1f9d104e-ca0e-4202-ba4b-a0afb969c747";
 // 反向代理IP，无法访问时通过代理访问
 const DEFAULT_PROXY_IP = "bestproxy.030101.xyz:443"; // 来源：https://ipdb.030101.xyz/bestdomain/
+// NAT64前缀
+const NAT64_PREFIX = "2602:fc59:b0:64::";
 // 优选域名/IP
 const BEST_DOMAINS = [
   "bestcf.030101.xyz:443",
@@ -75,6 +77,56 @@ function gen_links(workerDomain) {
   return links;
 }
 
+// 将IPv4地址转换为NAT64 IPv6地址
+function convertToRouteX(ipv4Address) {
+  const parts = ipv4Address.trim().split(".");
+  if (parts.length !== 4) {
+    throw new Error("Invalid IPv4 address");
+  }
+  const hexParts = parts.map((part) => {
+    const num = Number(part);
+    if (!/^\d+$/.test(part) || isNaN(num) || num < 0 || num > 255) {
+      throw new Error(`Invalid IPv4 segment: ${part}`);
+    }
+    return num.toString(16).padStart(2, "0");
+  });
+
+  const ipv6Tail = `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`
+    .toLowerCase();
+  const fullIPv6 = `${NAT64_PREFIX}${ipv6Tail}`;
+  return `[${fullIPv6}]`;
+}
+
+// 解析域名到NAT64 IPv6地址
+async function resolveDomainToRouteX(domain) {
+  try {
+    const response = await fetch(
+      `https://1.1.1.1/dns-query?name=${domain}&type=A`,
+      {
+        headers: {
+          Accept: "application/dns-json",
+        },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(`DNS query failed with status code: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const aRecord = result?.Answer?.find((record) =>
+      record.type === 1 && record.data
+    );
+    if (!aRecord) {
+      throw new Error("No valid A record found");
+    }
+    const ipv4 = aRecord.data;
+    const ipv6 = convertToRouteX(ipv4);
+    return ipv6;
+  } catch (err) {
+    throw new Error(`Domain resolution failed: ${err.message}`);
+  }
+}
+
 async function handle_ws(req) {
   const [client, ws] = Object.values(new WebSocketPair());
   ws.accept();
@@ -123,6 +175,7 @@ async function handle_ws(req) {
       if (key === "direct") order.push("direct");
       else if (key === "s5") order.push("s5");
       else if (key === "proxyip") order.push("proxy");
+      else if (key === "nat64") order.push("nat64");
     }
     // 没有参数时默认direct
     return order.length ? order : ["direct"];
@@ -327,6 +380,23 @@ async function handle_ws(req) {
               sock = connect({
                 hostname: ph,
                 port: +pp || port,
+              });
+              await sock.opened;
+              break;
+            } else if (method === "nat64") {
+              // 处理NAT64模式
+              let targetHost = addr;
+              // 如果是域名，解析为NAT64 IPv6
+              if (type === 2) {
+                targetHost = await resolveDomainToRouteX(addr);
+              } else if (type === 1) {
+                // 如果是IPv4，转换为NAT64 IPv6
+                targetHost = convertToRouteX(addr);
+              }
+              // 如果是IPv6，直接使用
+              sock = connect({
+                hostname: targetHost,
+                port,
               });
               await sock.opened;
               break;
