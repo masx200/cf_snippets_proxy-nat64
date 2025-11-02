@@ -1,4 +1,4 @@
-
+//https://github.com/byJoey/cfnew
 let backupIPs = [
     { domain: 'ProxyIP.US.CMLiussss.net', region: 'US', regionCode: 'US', port: 443 },
     { domain: 'ProxyIP.SG.CMLiussss.net', region: 'SG', regionCode: 'SG', port: 443 },
