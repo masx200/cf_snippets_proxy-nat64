@@ -3,7 +3,6 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import filesize from "rollup-plugin-filesize";
-import path from "path";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -12,12 +11,12 @@ export default defineConfig([
   {
     input: "snippets.js",
     output: [
-      {
-        file: "dist/snippets.js",
-        format: "es",
-        exports: "default",
-        sourcemap: !isProduction,
-      },
+      // {
+      //   file: "dist/snippets.js",
+      //   format: "es",
+      //   exports: "default",
+      //   sourcemap: !isProduction,
+      // },
       {
         file: "dist/snippets.min.js",
         format: "es",
@@ -63,12 +62,12 @@ export default defineConfig([
   {
     input: "worker.js",
     output: [
-      {
-        file: "dist/worker.js",
-        format: "es",
-        exports: "default",
-        sourcemap: !isProduction,
-      },
+      // {
+      //   file: "dist/worker.js",
+      //   format: "es",
+      //   exports: "default",
+      //   sourcemap: !isProduction,
+      // },
       {
         file: "dist/worker.min.js",
         format: "es",

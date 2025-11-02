@@ -27,10 +27,16 @@ import { connect } from "cloudflare:sockets";
 
 // VLESS 用户 ID（UUID 格式）
 const UUID = "1f9d104e-ca0e-4202-ba4b-a0afb969c747";
-
+let paddrs = [
+  "bestproxy.030101.xyz:443",
+  atob("cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc="), // 代理服务器 1
+  atob("cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ=="), // 代理服务器 2
+];
+// 随机选择代理服务器，实现负载均衡
+let paddr = paddrs[Math.floor(Math.random() * paddrs.length)];
 // 默认代理服务器 IP
 // 当直连失败时的备用代理服务器
-const DEFAULT_PROXY_IP = "bestproxy.030101.xyz:443"; // 来源：https://ipdb.030101.xyz/bestdomain/
+const DEFAULT_PROXY_IP = paddr; // "bestproxy.030101.xyz:443"; // 来源：https://ipdb.030101.xyz/bestdomain/
 
 // NAT64 IPv6 前缀
 // Cloudflare 的 NAT64 前缀，用于将 IPv4 地址转换为 IPv6
