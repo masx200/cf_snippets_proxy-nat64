@@ -1,53 +1,135 @@
 /**
+ * Cloudflare Workers VLESS 协议代理服务器
+ * ============================================
+ *
+ * 功能特性:
+ * - VLESS 协议支持（无加密的轻量级代理协议）
+ * - WebSocket 数据转发
+ * - NAT64 IPv6 转换（将 IPv4 地址转换为 NAT64 IPv6）
+ * - SOCKS5 代理支持
+ * - DNS over HTTPS (DoH) 代理
+ * - 动态域名路由（通过 KV 存储）
+ * - 支持直连、代理、NAT64 三种模式
+ *
+ * 作者联系方式:
  * YouTube  : https://youtube.com/@am_clubs
  * Telegram : https://t.me/am_clubs
  * GitHub   : https://github.com/amclubs
- * BLog     : https://amclubss.com
+ * Blog     : https://amclubss.com
  */
 
+// ============ 基础配置（使用 Base64 编码隐藏敏感信息）============
+
+// VLESS 用户 ID（UUID 格式）- 解码后: ec872d8f-72b0-4a04-b612-0327d85e18ed
+// 这是 VLESS 协议的用户标识，用于身份验证
 let id = atob("ZWM4NzJkOGYtNzJiMC00YTA0LWI2MTItMDMyN2Q4NWUxOGVk");
 
+// 默认代理端口 - 解码后: 443
 let pnum = atob("NDQz");
+
+// 代理服务器地址列表（随机选择一个作为出站代理）
+// 解码后:
+//   - proxyip.amclubs.camdvr.org
+//   - proxyip.amclubs.kozow.com
 let paddrs = [
-  atob("cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc="),
-  atob("cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ=="),
+  atob("cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc="), // 代理服务器 1
+  atob("cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ=="), // 代理服务器 2
 ];
+// 随机选择代理服务器，实现负载均衡
 let paddr = paddrs[Math.floor(Math.random() * paddrs.length)];
+// 代理域名列表（通过 KV 存储动态配置，满足匹配条件的域名使用代理）
 let pDomain = [];
 
+// ============ NAT64 配置（IPv6 转换）=============
+
+// 是否启用 NAT64 模式
+// true: NAT64 优先，失败后回退到代理
+// false: 代理优先，失败后回退到 NAT64
 let p64 = true;
+
+// DNS over HTTPS (DoH) 服务地址 - 解码后: https://1.1.1.1/dns-query
+// 用于解析域名到 IPv4 地址，然后转换为 NAT64 IPv6
 let p64DnUrl = atob("aHR0cHM6Ly8xLjEuMS4xL2Rucy1xdWVyeQ==");
+
+// NAT64 IPv6 前缀 - 解码后: 2602:fc59:b0:64::
+// 这是 Cloudflare 的 NAT64 前缀，用于将 IPv4 地址转换为 IPv6
+// 例如: 192.168.1.1 → 2602:fc59:b0:64::c0a8:0101
 let p64Prefix = atob("MjYwMjpmYzU5OmIwOjY0Ojo=");
+
+// NAT64 域名列表（通过 KV 存储动态配置）
+// 匹配这些域名的请求会使用 NAT64 转换
 let p64Domain = [];
 
+// ============ SOCKS5 代理配置 =============
+
+// SOCKS5 代理配置字符串（格式: user:pass@host:port）
 let s5 = "";
+// 是否启用 SOCKS5 代理
 let s5Enable = false;
+// 解析后的 SOCKS5 配置对象
 let parsedS5 = {};
 
+// ============ 其他配置 =============
+
+// DNS 代理服务 URL（用于 UDP DNS 代理）
 let durl = atob(
   "aHR0cHM6Ly9za3kucmV0aGlua2Rucy5jb20vMTotUGZfX19fXzlfOEFfQU1BSWdFOGtNQUJWRERtS09IVEFLZz0=",
 );
-let fname = atob("5pWw5a2X5aWX5Yip");
+
+// 项目名称（Base64 编码）- 用于页面标题显示
+let fname = atob("5pWw5a2X5aWX5Yip"); // "ææææææææ" (可能是编码问题，实际应为中文)
+
+// 用于 XOR 编码的密钥字符串 - 解码后: "datatype"
 const dataTypeTr = "EBMbCxUX";
+
+// 是否启用详细日志输出（可用于调试）
 let enableLog = false;
 
+// ============ 作者相关链接（Base64 编码）=============
+
+// YouTube 频道链接 - 解码后: https://youtube.com/@am_clubs?sub_confirmation=1
 let ytName = atob(
   "aHR0cHM6Ly95b3V0dWJlLmNvbS9AYW1fY2x1YnM/c3ViX2NvbmZpcm1hdGlvbj0x",
 );
+
+// Telegram 频道链接 - 解码后: https://t.me/am_clubs
 let tgName = atob("aHR0cHM6Ly90Lm1lL2FtX2NsdWJz");
+
+// GitHub 仓库链接 - 解码后: https://github.com/amclubs/am-cf-tunnel
 let ghName = atob("aHR0cHM6Ly9naXRodWIuY29tL2FtY2x1YnMvYW0tY2YtdHVubmVs");
+
+// Blog 链接 - 解码后: https://amclubss.com
 let bName = atob("aHR0cHM6Ly9hbWNsdWJzcy5jb20=");
+
+// 项目名称（Base64 编码）
 let pName = "5pWw5a2X5aWX5Yip";
 
+// ============ Cloudflare Workers 导入 =============
+
+// 导入 Cloudflare Workers 的 socket 连接模块
+// 用于建立 TCP/UDP 连接
 import { connect } from "cloudflare:sockets";
 
+// ============ 入口函数 =============
+
+// 验证用户 ID 格式是否有效（必须是有效的 UUID v4 格式）
 if (!isValidUserId(id)) {
   throw new Error("id is invalid");
 }
 
+// Cloudflare Workers 的默认导出
+// 每个 HTTP 请求都会调用此函数
 export default {
+  /**
+   * 主请求处理函数
+   * @param {Request} request - 传入的 HTTP 请求
+   * @param {Object} env - 环境变量（包含 KV 存储等配置）
+   * @param {Object} ctx - 执行上下文
+   * @returns {Response} HTTP 响应
+   */
   async fetch(request, env, ctx) {
     try {
+      // 从环境变量中获取配置（可被 URL 参数覆盖）
       let { ID, PADDR, P64, P64PREFIX, S5, D_URL, ENABLE_LOG } = env;
 
       const kvCheckResponse = await check_kv(env);
@@ -119,26 +201,56 @@ export default {
   },
 };
 
-/** ---------------------tools------------------------------ */
+// ============ 工具函数 =============
+
+/**
+ * 日志输出函数
+ * 只有在 enableLog 为 true 时才会输出日志
+ * 用于调试和监控代理行为
+ */
 function log(...args) {
   if (enableLog) console.log(...args);
 }
 
+/**
+ * 错误日志输出函数
+ * 只有在 enableLog 为 true 时才会输出错误日志
+ */
 function error(...args) {
   if (enableLog) console.error(...args);
 }
 
+/**
+ * 验证 UUID v4 格式
+ * VLESS 协议要求使用 UUID v4 格式作为用户 ID
+ * @param {string} uuid - 要验证的 UUID 字符串
+ * @returns {boolean} 是否为有效的 UUID v4
+ */
 function isValidUserId(uuid) {
+  // UUID v4 格式的正则表达式
+  // 第 4 段的开头必须是 4、5、6、7、8、9、a 或 b
   const uuidRegex =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 
+/**
+ * UUID 处理相关函数
+ * 用于将字节数组转换为 UUID 字符串
+ */
+
+// 字节到十六进制字符串的查找表
 const byteToHex = [];
 for (let i = 0; i < 256; ++i) {
   byteToHex.push((i + 256).toString(16).slice(1));
 }
 
+/**
+ * 不安全的 UUID 字符串化函数（不验证格式）
+ * @param {Uint8Array} arr - 字节数组
+ * @param {number} offset - 起始偏移量
+ * @returns {string} UUID 字符串
+ */
 function unsafeStringify(arr, offset = 0) {
   return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] +
     byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" +
@@ -150,6 +262,13 @@ function unsafeStringify(arr, offset = 0) {
     byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
 }
 
+/**
+ * 安全的 UUID 字符串化函数（验证格式）
+ * @param {Uint8Array} arr - 字节数组
+ * @param {number} offset - 起始偏移量
+ * @returns {string} UUID 字符串
+ * @throws {TypeError} 如果 UUID 格式无效
+ */
 function stringify(arr, offset = 0) {
   const uuid = unsafeStringify(arr, offset);
   if (!isValidUserId(uuid)) {

@@ -1,0 +1,60 @@
+=== Base64 解码结果 ===
+
+【worker.js 解码结果】
+
+ID/UUID:
+编码: ZWM4NzJkOGYtNzJiMC00YTA0LWI2MTItMDMyN2Q4NWUxOGVk
+解码: ec872d8f-72b0-4a04-b612-0327d85e18ed
+---
+端口号:
+编码: NDQz
+解码: 443
+---
+代理服务器地址:
+编码: cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc=
+解码: proxyip.amclubs.camdvr.org
+---
+编码: cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ==
+解码: proxyip.amclubs.kozow.com
+---
+DNS查询服务:
+编码: aHR0cHM6Ly8xLjEuMS4xL2Rucy1xdWVyeQ==
+解码: https://1.1.1.1/dns-query
+---
+NAT64前缀:
+编码: MjYwMjpmYzU5OmIwOjY0Ojo=
+解码: 2602:fc59:b0:64::
+---
+项目名称:
+编码: 5pWw5a2X5aWX5Yip
+解码: æ°å­å¥å©
+---
+相关链接:
+编码: aHR0cHM6Ly95b3V0dWJlLmNvbS9AYW1fY2x1YnM/c3ViX2NvbmZpcm1hdGlvbj0x
+解码: https://youtube.com/@am_clubs?sub_confirmation=1
+---
+编码: aHR0cHM6Ly90Lm1lL2FtX2NsdWJz
+解码: https://t.me/am_clubs
+---
+编码: aHR0cHM6Ly9naXRodWIuY29tL2FtY2x1YnMvYW0tY2YtdHVubmVs
+解码: https://github.com/amclubs/am-cf-tunnel
+---
+编码: aHR0cHM6Ly9hbWNsdWJzcy5jb20=
+解码: https://amclubss.com
+---
+
+
+【snippets.js 解码结果】
+
+协议类型:
+编码: dmxlc3M=
+解码: vless
+---
+
+=== 解码完成 ===
+
+这些字符串主要用于:
+1. 隐藏敏感配置信息 (UUID、服务器地址等)
+2. 缩短代码长度
+3. 防止简单的字符串搜索
+4. 保护项目信息 (链接、名称等)
