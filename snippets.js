@@ -27,10 +27,14 @@ import { connect } from "cloudflare:sockets";
 
 // VLESS 用户 ID（UUID 格式）
 const UUID = "1f9d104e-ca0e-4202-ba4b-a0afb969c747";
+
+import { backupIPs } from "./backupIPs.js";
 let paddrs = [
   "bestproxy.030101.xyz:443",
   atob("cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc="), // 代理服务器 1
   atob("cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ=="), // 代理服务器 2
+
+  ...backupIPs.map((ip) => `${ip.domain}:${ip.port}`),
 ];
 // 随机选择代理服务器，实现负载均衡
 let paddr = paddrs[Math.floor(Math.random() * paddrs.length)];
@@ -156,8 +160,8 @@ function gen_links(workerDomain) {
     // 格式: vless://UUID@server:port?params#name
     links.push(
       `${proto}://${UUID}@${item}?${wsParams.toString()}#${encodeURIComponent(
-        name,
-      )}`,
+        name
+      )}`
     );
   });
 
@@ -219,7 +223,7 @@ async function resolveDomainToRouteX(domain) {
         headers: {
           Accept: "application/dns-json",
         },
-      },
+      }
     );
 
     // 检查 DNS 查询响应
@@ -232,7 +236,7 @@ async function resolveDomainToRouteX(domain) {
 
     // 查找 A 记录（type = 1）
     const aRecord = result?.Answer?.find(
-      (record) => record.type === 1 && record.data,
+      (record) => record.type === 1 && record.data
     );
 
     if (!aRecord) {
@@ -364,7 +368,7 @@ async function handle_ws(req) {
 
       // 发送用户名密码认证请求
       await w.write(
-        new Uint8Array([1, user.length, ...user, pass.length, ...pass]),
+        new Uint8Array([1, user.length, ...user, pass.length, ...pass])
       );
 
       // 等待认证结果
@@ -383,7 +387,7 @@ async function handle_ws(req) {
         ...domain, // 域名
         targetPort >> 8, // 端口高字节
         targetPort & 0xff, // 端口低字节
-      ]),
+      ])
     );
 
     // 等待连接结果
@@ -423,8 +427,8 @@ async function handle_ws(req) {
           ctrl.enqueue(
             Uint8Array.from(
               atob(early.replace(/-/g, "+").replace(/_/g, "/")),
-              (c) => c.charCodeAt(0),
-            ).buffer,
+              (c) => c.charCodeAt(0)
+            ).buffer
           );
         } catch {}
       }
@@ -479,7 +483,7 @@ async function handle_ws(req) {
           if (type === 1) {
             // IPv4 地址 (4 字节)
             addr = `${view.getUint8(pos)}.${view.getUint8(pos + 1)}.${view.getUint8(
-              pos + 2,
+              pos + 2
             )}.${view.getUint8(pos + 3)}`;
             pos += 4;
           } else if (type === 2) {
@@ -541,13 +545,13 @@ async function handle_ws(req) {
                           result.length >> 8, // 长度高字节
                           result.length & 0xff, // 长度低字节
                           ...result,
-                        ]),
+                        ])
                       );
                       sent = true;
                     }
                   } catch {}
                 },
-              }),
+              })
             );
             udpWriter = writable.getWriter();
             return udpWriter.write(payload);
@@ -626,18 +630,18 @@ async function handle_ws(req) {
                     ws.send(
                       sent
                         ? chunk
-                        : new Uint8Array([...header, ...new Uint8Array(chunk)]),
+                        : new Uint8Array([...header, ...new Uint8Array(chunk)])
                     );
                     sent = true;
                   }
                 },
                 close: () => ws.readyState === 1 && ws.close(),
                 abort: () => ws.readyState === 1 && ws.close(),
-              }),
+              })
             )
             .catch(() => {});
         },
-      }),
+      })
     )
     .catch(() => {});
 
