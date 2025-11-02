@@ -1,0 +1,39 @@
+{
+  "name": "cf_snippets_proxy-nat64",
+  "version": "1.0.0",
+  "description": "Cloudflare Workers VLESS proxy with NAT64 support",
+  "main": "dist/snippets.js",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write \"**/*.{js,json,css,md,yaml}\"",
+    "build": "rollup -c",
+    "build:prod": "cross-env NODE_ENV=production rollup -c",
+    "build:dev": "rollup -c",
+    "dev": "rollup -c -w",
+    "clean": "rimraf dist",
+    "analyze": "pnpm run build:prod && ls -la dist/"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "vless",
+    "proxy",
+    "nat64",
+    "websocket"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.20.0",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^29.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "cross-env": "^10.1.0",
+    "rimraf": "^6.1.0",
+    "rollup": "^4.52.5",
+    "rollup-plugin-filesize": "^10.0.0"
+  },
+  "dependencies": {
+    "prettier": "^3.6.2"
+  }
+}

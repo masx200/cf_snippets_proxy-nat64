@@ -2,13 +2,39 @@
 
 交流TG群：https://t.me/jackrun
 
-步骤：
+## 部署方法
 
-1. 在Cloudflare中选择一个域名，在右侧 规则(Rule) >
-   Snippets，如果提示需要升级到Pro，尝试换一个域名
+### 方法一：直接部署（推荐）
+
+1. 在Cloudflare中选择一个域名，在右侧 规则(Rule) > Snippets
 2. 在Snippets里创建一个片段，粘贴代码
 3. 修改UUID变量
 4. 部署
+
+### 方法二：使用构建系统（推荐用于生产）
+
+```bash
+# 安装依赖
+pnpm install
+
+# 构建生产版本
+pnpm run build:prod
+
+# 复制 dist/snippets.min.js 到 Cloudflare Snippets
+cat dist/snippets.min.js | pbcopy  # macOS
+# 或直接使用 dist/snippets.min.js 文件
+```
+
+## 构建优化
+
+本项目支持使用 Pnpm + Rollup + Terser 进行构建优化：
+
+- **压缩率**：代码体积减少 50-70%
+- **源码映射**：开发版本包含 source maps
+- **生产优化**：自动移除调试代码和注释
+- **多版本输出**：同时生成开发和生产版本
+
+详细构建说明请参考 [BUILD.md](./BUILD.md)
 
 # 感谢
 
@@ -24,7 +50,6 @@
 ## Update history
 
 - **20251102**：重新添加 NAT64 模式支持
-
   - 新增 `/?mode=nat64` 模式，将域名或 IPv4 转换为 NAT64 IPv6 格式
   - 支持在 `auto` 模式中使用 `nat64` 参数：`/?mode=auto&nat64&direct`
   - NAT64 前缀：`2602:fc59:b0:64::`
@@ -32,7 +57,6 @@
 
 - **20250906**：废弃`仅ProxyIP`模式，无用
 - **20250905**：代理模式配置：
-
   - `/?mode=direct`（仅直连）
   - `/?mode=s5&s5=user:pass@host:port`（仅SOCKS5）
   - `/?mode=nat64`（仅NAT64）
@@ -109,7 +133,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ## ⚙️ 二、Workers 部署方法 [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=165s)
 
@@ -133,7 +157,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 3. 部署 Cloudflare Worker代码：
    - 在 workers控制台的 右上角方点击 `编辑代码(</>)` 图标进入代码编辑页面。
    - 将
-     [_worker.js](https://github.com/amclubs/am-cf-tunnel/blob/main/_worker.js)
+     [\_worker.js](https://github.com/amclubs/am-cf-tunnel/blob/main/_worker.js)
      的内容粘贴到 Worker 编辑器中 右上方点击 -> `部署` 完成部署。
 4. 给 workers绑定 自定义域：
    [免费域名申请教程](https://www.youtube.com/playlist?list=PLGVQi7TjHKXZGODTvB8DEervrmHANQ1AR)
@@ -161,7 +185,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ## 📦三、Pages 上传 部署方法 **(最佳推荐!!!)** [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=1100s)
 
@@ -170,14 +194,14 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 1. 部署 Cloudflare Pages：
    - 下载
-     [_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
+     [\_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
      文件，并点上 Star !!!
    - 在 CloudFlare主页的左边菜单的 `计算(Workers)` 选项卡 -> 点击
      `Workers 和 Pages` -> 右上方点击 -> `创建应用程序` -> 选择 `Pages`里的
      `拖放文件` 点击 `开始使用` -> 填入 `项目名称`(此名称自己命名)后 -> 右边点击
      `创建项目` 后 -> 下方 `上传您的项目资产` 点击 `拖放或从计算机中选择` 后 ->
      点击 `上传压缩文件` 然后上传你下载好的
-     [_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
+     [\_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
      文件后点击 `部署站点`。
 2. 给UUID设置KV存储桶(推荐设置)：
    - 在 CloudFlare主页的左边菜单的 `存储和数据库` 选项卡 -> 展开选择点击
@@ -187,7 +211,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
      `KV 命名空间` -> 变量名称 填入 `amclubs`(此名称固定不能变) -> KV 命名空间
      选择 在上面创建的 `命名空间名称`后 -> 右下方点击 `保存`。
    - 在 `设置` 选项卡，在右上角点击 `创建部署` 后，重新上传
-     [_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
+     [\_worker.js.zip](https://raw.githubusercontent.com/amclubs/am-cf-tunnel/main/_worker.js.zip)
      文件后点击 `保存并部署` 即可。
 3. 给 Pages绑定
    CNAME自定义域：[无域名绑定Cloudflare部署视频教程]->[免费域名教程1](https://youtu.be/wHJ6TJiCF0s)
@@ -216,7 +240,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ## 🧰四、Pages GitHub 部署方法 **(不推荐)** [视频教程](https://www.youtube.com/watch?v=dPH63nITA0M&t=654s)
 
@@ -269,16 +293,16 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ## 🔧五、变量说明 [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=468s)
 
-| 变量名 | 示例                                         | 必填 | 备注                                                                                          | YT |
-| ------ | -------------------------------------------- | ---- | --------------------------------------------------------------------------------------------- | -- |
-| ID     | ec872d8f-72b0-4a04-b612-0327d85e18ed（默认） | ✅   | 支持Cloudflare的KV存储桶设置 [在线获取UUID](https://1024tools.com/uuid) VLESS、Trojan节点共用 |    |
-| D_URL  | https://cloudflare-dns.com/dns-query         | ❌   | DNS解析获取作用，小白勿用                                                                     |    |
+| 变量名 | 示例                                         | 必填 | 备注                                                                                          | YT  |
+| ------ | -------------------------------------------- | ---- | --------------------------------------------------------------------------------------------- | --- |
+| ID     | ec872d8f-72b0-4a04-b612-0327d85e18ed（默认） | ✅   | 支持Cloudflare的KV存储桶设置 [在线获取UUID](https://1024tools.com/uuid) VLESS、Trojan节点共用 |     |
+| D_URL  | https://cloudflare-dns.com/dns-query         | ❌   | DNS解析获取作用，小白勿用                                                                     |     |
 
-## 
+##
 
 ## 🧩六、节点订阅配置 [Vercel部署视频教程](https://www.youtube.com/playlist?list=PLGVQi7TjHKXZGODTvB8DEervrmHANQ1AR) [Cloudfare部署视频教程](https://youtu.be/f8ZTvv4u3Pw)
 
@@ -361,7 +385,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ## 🛠已适配订阅工具 [点击进入视频教程](https://youtu.be/xGOL57cmvaw) [点进进入karing视频教程](https://youtu.be/M3vLLBWfuFg)
 
@@ -412,7 +436,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-## 
+##
 
 ### 🙏感谢
 
@@ -424,7 +448,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 (**55元1000GB不限时**)✅畅爽晚高峰 解锁ChatGPT、全流媒体(送小火箭)
 </br>🌐官网：[https://llgjc1.com](https://llgjc1.com/#/register?code=bIUDEPTu)
 
-# 
+#
 
 <center>
 <details><summary><strong> ☕ [点击展开] 赞赏支持 ~🧧</strong></summary>
@@ -440,7 +464,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 </details>
 </center>
 
-# 
+#
 
 ⚠️免责声明:
 

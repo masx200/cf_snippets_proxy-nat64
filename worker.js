@@ -135,11 +135,11 @@ export default {
       const kvCheckResponse = await check_kv(env);
       let kvData = {};
       if (!kvCheckResponse) {
-        kvData = await get_kv(env) || {};
+        kvData = (await get_kv(env)) || {};
         log(
-          `[fetch]--> kv_id = ${kvData.kv_id}, kv_pDomain = ${
-            JSON.stringify(kvData.pDomain)
-          }, kv_p64Domain = ${JSON.stringify(kvData.kv_p64Domain)}`,
+          `[fetch]--> kv_id = ${kvData.kv_id}, kv_pDomain = ${JSON.stringify(
+            kvData.pDomain,
+          )}, kv_p64Domain = ${JSON.stringify(kvData.kv_p64Domain)}`,
         );
       }
 
@@ -252,14 +252,28 @@ for (let i = 0; i < 256; ++i) {
  * @returns {string} UUID 字符串
  */
 function unsafeStringify(arr, offset = 0) {
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] +
-    byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" +
-    byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" +
-    byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" +
-    byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" +
-    byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] +
-    byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] +
-    byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  return (
+    byteToHex[arr[offset + 0]] +
+    byteToHex[arr[offset + 1]] +
+    byteToHex[arr[offset + 2]] +
+    byteToHex[arr[offset + 3]] +
+    "-" +
+    byteToHex[arr[offset + 4]] +
+    byteToHex[arr[offset + 5]] +
+    "-" +
+    byteToHex[arr[offset + 6]] +
+    byteToHex[arr[offset + 7]] +
+    "-" +
+    byteToHex[arr[offset + 8]] +
+    byteToHex[arr[offset + 9]] +
+    "-" +
+    byteToHex[arr[offset + 10]] +
+    byteToHex[arr[offset + 11]] +
+    byteToHex[arr[offset + 12]] +
+    byteToHex[arr[offset + 13]] +
+    byteToHex[arr[offset + 14]] +
+    byteToHex[arr[offset + 15]]
+  ).toLowerCase();
 }
 
 /**
@@ -392,15 +406,17 @@ async function getDomainToRouteX(
       `[getDomainToRouteX]--> paddr=${paddr}, p64Prefix=${p64Prefix}, addressRemote=${addressRemote}, p64=${p64}`,
     );
     log(
-      `[getDomainToRouteX]--> pDomain=${JSON.stringify(pDomain)}, p64Domain=${
-        JSON.stringify(p64Domain)
-      }`,
+      `[getDomainToRouteX]--> pDomain=${JSON.stringify(pDomain)}, p64Domain=${JSON.stringify(
+        p64Domain,
+      )}`,
     );
 
     const safeMatch = (domains, target) => {
       try {
-        return Array.isArray(domains) &&
-          domains.some((domain) => matchesDomainPattern(target, domain));
+        return (
+          Array.isArray(domains) &&
+          domains.some((domain) => matchesDomainPattern(target, domain))
+        );
       } catch (e) {
         log(`[error]--> matchesDomainPattern failed: ${e.message}`);
         return false;
@@ -500,12 +516,14 @@ async function resolveDomainToRouteX(domain) {
 
     const result = await response.json();
     log(
-      `[resolveDomainToRouteX] Query result: ${
-        JSON.stringify(result, null, 2)
-      }`,
+      `[resolveDomainToRouteX] Query result: ${JSON.stringify(
+        result,
+        null,
+        2,
+      )}`,
     );
-    const aRecord = result?.Answer?.find((record) =>
-      record.type === 1 && record.data
+    const aRecord = result?.Answer?.find(
+      (record) => record.type === 1 && record.data,
     );
     if (!aRecord) {
       throw new Error("No valid A record found");
@@ -539,14 +557,16 @@ function convertToRouteX(ipv4Address) {
   let withBrackets = true;
   log(`[convertToRouteX] p64Prefix--->: ${p64Prefix}`);
   if (
-    !p64Prefix || typeof p64Prefix !== "string" || !p64Prefix.includes("::")
+    !p64Prefix ||
+    typeof p64Prefix !== "string" ||
+    !p64Prefix.includes("::")
   ) {
     throw new Error(
       "[convertToRouteX] Invalid manual prefix; must be a valid IPv6 prefix",
     );
   }
-  const ipv6Tail = `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`
-    .toLowerCase();
+  const ipv6Tail =
+    `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`.toLowerCase();
   const fullIPv6 = `${p64Prefix}${ipv6Tail}`;
   return withBrackets ? `[${fullIPv6}]` : fullIPv6;
 }
@@ -569,86 +589,38 @@ function stringToArray(str) {
     WINDOW = false;
   }
   var WEB_WORKER = !WINDOW && typeof self === "object";
-  var NODE_JS = !root.JS_SHA256_NO_NODE_JS && typeof process === "object" &&
-    process.versions && process.versions.node;
+  var NODE_JS =
+    !root.JS_SHA256_NO_NODE_JS &&
+    typeof process === "object" &&
+    process.versions &&
+    process.versions.node;
   if (NODE_JS) {
     root = global;
   } else if (WEB_WORKER) {
     root = self;
   }
-  var COMMON_JS = !root.JS_SHA256_NO_COMMON_JS && typeof module === "object" &&
+  var COMMON_JS =
+    !root.JS_SHA256_NO_COMMON_JS &&
+    typeof module === "object" &&
     module.exports;
   var AMD = typeof define === "function" && define.amd;
-  var ARRAY_BUFFER = !root.JS_SHA256_NO_ARRAY_BUFFER &&
-    typeof ArrayBuffer !== "undefined";
+  var ARRAY_BUFFER =
+    !root.JS_SHA256_NO_ARRAY_BUFFER && typeof ArrayBuffer !== "undefined";
   var HEX_CHARS = "0123456789abcdef".split("");
   var EXTRA = [-2147483648, 8388608, 32768, 128];
   var SHIFT = [24, 16, 8, 0];
   var K = [
-    0x428a2f98,
-    0x71374491,
-    0xb5c0fbcf,
-    0xe9b5dba5,
-    0x3956c25b,
-    0x59f111f1,
-    0x923f82a4,
-    0xab1c5ed5,
-    0xd807aa98,
-    0x12835b01,
-    0x243185be,
-    0x550c7dc3,
-    0x72be5d74,
-    0x80deb1fe,
-    0x9bdc06a7,
-    0xc19bf174,
-    0xe49b69c1,
-    0xefbe4786,
-    0x0fc19dc6,
-    0x240ca1cc,
-    0x2de92c6f,
-    0x4a7484aa,
-    0x5cb0a9dc,
-    0x76f988da,
-    0x983e5152,
-    0xa831c66d,
-    0xb00327c8,
-    0xbf597fc7,
-    0xc6e00bf3,
-    0xd5a79147,
-    0x06ca6351,
-    0x14292967,
-    0x27b70a85,
-    0x2e1b2138,
-    0x4d2c6dfc,
-    0x53380d13,
-    0x650a7354,
-    0x766a0abb,
-    0x81c2c92e,
-    0x92722c85,
-    0xa2bfe8a1,
-    0xa81a664b,
-    0xc24b8b70,
-    0xc76c51a3,
-    0xd192e819,
-    0xd6990624,
-    0xf40e3585,
-    0x106aa070,
-    0x19a4c116,
-    0x1e376c08,
-    0x2748774c,
-    0x34b0bcb5,
-    0x391c0cb3,
-    0x4ed8aa4a,
-    0x5b9cca4f,
-    0x682e6ff3,
-    0x748f82ee,
-    0x78a5636f,
-    0x84c87814,
-    0x8cc70208,
-    0x90befffa,
-    0xa4506ceb,
-    0xbef9a3f7,
-    0xc67178f2,
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
+    0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
+    0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
+    0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
+    0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
+    0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
   ];
   var OUTPUT_TYPES = ["hex", "array", "digest", "arrayBuffer"];
 
@@ -665,8 +637,11 @@ function stringToArray(str) {
     (root.JS_SHA256_NO_ARRAY_BUFFER_IS_VIEW || !ArrayBuffer.isView)
   ) {
     ArrayBuffer.isView = function (obj) {
-      return typeof obj === "object" && obj.buffer &&
-        obj.buffer.constructor === ArrayBuffer;
+      return (
+        typeof obj === "object" &&
+        obj.buffer &&
+        obj.buffer.constructor === ArrayBuffer
+      );
     };
   }
 
@@ -708,9 +683,10 @@ function stringToArray(str) {
     }
     var nodeMethod = function (message) {
       if (typeof message === "string") {
-        return crypto.createHash(algorithm).update(message, "utf8").digest(
-          "hex",
-        );
+        return crypto
+          .createHash(algorithm)
+          .update(message, "utf8")
+          .digest("hex");
       } else {
         if (message === null || message === undefined) {
           throw new Error(ERROR);
@@ -719,12 +695,14 @@ function stringToArray(str) {
         }
       }
       if (
-        Array.isArray(message) || ArrayBuffer.isView(message) ||
+        Array.isArray(message) ||
+        ArrayBuffer.isView(message) ||
         message.constructor === Buffer
       ) {
-        return crypto.createHash(algorithm).update(bufferFrom(message)).digest(
-          "hex",
-        );
+        return crypto
+          .createHash(algorithm)
+          .update(bufferFrom(message))
+          .digest("hex");
       } else {
         return method(message);
       }
@@ -787,7 +765,8 @@ function stringToArray(str) {
       this.h5 = 0x68581511;
       this.h6 = 0x64f98fa7;
       this.h7 = 0xbefa4fa4;
-    } else { // 256
+    } else {
+      // 256
       this.h0 = 0x6a09e667;
       this.h1 = 0xbb67ae85;
       this.h2 = 0x3c6ef372;
@@ -798,11 +777,7 @@ function stringToArray(str) {
       this.h7 = 0x5be0cd19;
     }
 
-    this.block =
-      this.start =
-      this.bytes =
-      this.hBytes =
-        0;
+    this.block = this.start = this.bytes = this.hBytes = 0;
     this.finalized = this.hashed = false;
     this.first = true;
     this.is224 = is224;
@@ -812,7 +787,8 @@ function stringToArray(str) {
     if (this.finalized) {
       return;
     }
-    var notString, type = typeof message;
+    var notString,
+      type = typeof message;
     if (type !== "string") {
       if (type === "object") {
         if (message === null) {
@@ -829,7 +805,11 @@ function stringToArray(str) {
       }
       notString = true;
     }
-    var code, index = 0, i, length = message.length, blocks = this.blocks;
+    var code,
+      index = 0,
+      i,
+      length = message.length,
+      blocks = this.blocks;
     while (index < length) {
       if (this.hashed) {
         this.hashed = false;
@@ -871,11 +851,12 @@ function stringToArray(str) {
             blocks[i >>> 2] |= (0x80 | ((code >>> 6) & 0x3f)) << SHIFT[i++ & 3];
             blocks[i >>> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
           } else {
-            code = 0x10000 +
+            code =
+              0x10000 +
               (((code & 0x3ff) << 10) | (message.charCodeAt(++index) & 0x3ff));
             blocks[i >>> 2] |= (0xf0 | (code >>> 18)) << SHIFT[i++ & 3];
-            blocks[i >>> 2] |= (0x80 | ((code >>> 12) & 0x3f)) <<
-              SHIFT[i++ & 3];
+            blocks[i >>> 2] |=
+              (0x80 | ((code >>> 12) & 0x3f)) << SHIFT[i++ & 3];
             blocks[i >>> 2] |= (0x80 | ((code >>> 6) & 0x3f)) << SHIFT[i++ & 3];
             blocks[i >>> 2] |= (0x80 | (code & 0x3f)) << SHIFT[i++ & 3];
           }
@@ -894,7 +875,7 @@ function stringToArray(str) {
       }
     }
     if (this.bytes > 4294967295) {
-      this.hBytes += this.bytes / 4294967296 << 0;
+      this.hBytes += (this.bytes / 4294967296) << 0;
       this.bytes = this.bytes % 4294967296;
     }
     return this;
@@ -905,7 +886,8 @@ function stringToArray(str) {
       return;
     }
     this.finalized = true;
-    var blocks = this.blocks, i = this.lastByteIndex;
+    var blocks = this.blocks,
+      i = this.lastByteIndex;
     blocks[16] = this.block;
     blocks[i >>> 2] |= EXTRA[i & 3];
     this.block = blocks[16];
@@ -932,7 +914,7 @@ function stringToArray(str) {
         blocks[15] =
           0;
     }
-    blocks[14] = this.hBytes << 3 | this.bytes >>> 29;
+    blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
     blocks[15] = this.bytes << 3;
     this.hash();
   };
@@ -964,9 +946,9 @@ function stringToArray(str) {
       t1 = blocks[j - 15];
       s0 = ((t1 >>> 7) | (t1 << 25)) ^ ((t1 >>> 18) | (t1 << 14)) ^ (t1 >>> 3);
       t1 = blocks[j - 2];
-      s1 = ((t1 >>> 17) | (t1 << 15)) ^ ((t1 >>> 19) | (t1 << 13)) ^
-        (t1 >>> 10);
-      blocks[j] = blocks[j - 16] + s0 + blocks[j - 7] + s1 << 0;
+      s1 =
+        ((t1 >>> 17) | (t1 << 15)) ^ ((t1 >>> 19) | (t1 << 13)) ^ (t1 >>> 10);
+      blocks[j] = (blocks[j - 16] + s0 + blocks[j - 7] + s1) << 0;
     }
 
     bc = b & c;
@@ -975,72 +957,88 @@ function stringToArray(str) {
         if (this.is224) {
           ab = 300032;
           t1 = blocks[0] - 1413257819;
-          h = t1 - 150054599 << 0;
-          d = t1 + 24177077 << 0;
+          h = (t1 - 150054599) << 0;
+          d = (t1 + 24177077) << 0;
         } else {
           ab = 704751109;
           t1 = blocks[0] - 210244248;
-          h = t1 - 1521486534 << 0;
-          d = t1 + 143694565 << 0;
+          h = (t1 - 1521486534) << 0;
+          d = (t1 + 143694565) << 0;
         }
         this.first = false;
       } else {
-        s0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^
+        s0 =
+          ((a >>> 2) | (a << 30)) ^
+          ((a >>> 13) | (a << 19)) ^
           ((a >>> 22) | (a << 10));
-        s1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^
+        s1 =
+          ((e >>> 6) | (e << 26)) ^
+          ((e >>> 11) | (e << 21)) ^
           ((e >>> 25) | (e << 7));
         ab = a & b;
         maj = ab ^ (a & c) ^ bc;
         ch = (e & f) ^ (~e & g);
         t1 = h + s1 + ch + K[j] + blocks[j];
         t2 = s0 + maj;
-        h = d + t1 << 0;
-        d = t1 + t2 << 0;
+        h = (d + t1) << 0;
+        d = (t1 + t2) << 0;
       }
-      s0 = ((d >>> 2) | (d << 30)) ^ ((d >>> 13) | (d << 19)) ^
+      s0 =
+        ((d >>> 2) | (d << 30)) ^
+        ((d >>> 13) | (d << 19)) ^
         ((d >>> 22) | (d << 10));
-      s1 = ((h >>> 6) | (h << 26)) ^ ((h >>> 11) | (h << 21)) ^
+      s1 =
+        ((h >>> 6) | (h << 26)) ^
+        ((h >>> 11) | (h << 21)) ^
         ((h >>> 25) | (h << 7));
       da = d & a;
       maj = da ^ (d & b) ^ ab;
       ch = (h & e) ^ (~h & f);
       t1 = g + s1 + ch + K[j + 1] + blocks[j + 1];
       t2 = s0 + maj;
-      g = c + t1 << 0;
-      c = t1 + t2 << 0;
-      s0 = ((c >>> 2) | (c << 30)) ^ ((c >>> 13) | (c << 19)) ^
+      g = (c + t1) << 0;
+      c = (t1 + t2) << 0;
+      s0 =
+        ((c >>> 2) | (c << 30)) ^
+        ((c >>> 13) | (c << 19)) ^
         ((c >>> 22) | (c << 10));
-      s1 = ((g >>> 6) | (g << 26)) ^ ((g >>> 11) | (g << 21)) ^
+      s1 =
+        ((g >>> 6) | (g << 26)) ^
+        ((g >>> 11) | (g << 21)) ^
         ((g >>> 25) | (g << 7));
       cd = c & d;
       maj = cd ^ (c & a) ^ da;
       ch = (g & h) ^ (~g & e);
       t1 = f + s1 + ch + K[j + 2] + blocks[j + 2];
       t2 = s0 + maj;
-      f = b + t1 << 0;
-      b = t1 + t2 << 0;
-      s0 = ((b >>> 2) | (b << 30)) ^ ((b >>> 13) | (b << 19)) ^
+      f = (b + t1) << 0;
+      b = (t1 + t2) << 0;
+      s0 =
+        ((b >>> 2) | (b << 30)) ^
+        ((b >>> 13) | (b << 19)) ^
         ((b >>> 22) | (b << 10));
-      s1 = ((f >>> 6) | (f << 26)) ^ ((f >>> 11) | (f << 21)) ^
+      s1 =
+        ((f >>> 6) | (f << 26)) ^
+        ((f >>> 11) | (f << 21)) ^
         ((f >>> 25) | (f << 7));
       bc = b & c;
       maj = bc ^ (b & d) ^ cd;
       ch = (f & g) ^ (~f & h);
       t1 = e + s1 + ch + K[j + 3] + blocks[j + 3];
       t2 = s0 + maj;
-      e = a + t1 << 0;
-      a = t1 + t2 << 0;
+      e = (a + t1) << 0;
+      a = (t1 + t2) << 0;
       this.chromeBugWorkAround = true;
     }
 
-    this.h0 = this.h0 + a << 0;
-    this.h1 = this.h1 + b << 0;
-    this.h2 = this.h2 + c << 0;
-    this.h3 = this.h3 + d << 0;
-    this.h4 = this.h4 + e << 0;
-    this.h5 = this.h5 + f << 0;
-    this.h6 = this.h6 + g << 0;
-    this.h7 = this.h7 + h << 0;
+    this.h0 = (this.h0 + a) << 0;
+    this.h1 = (this.h1 + b) << 0;
+    this.h2 = (this.h2 + c) << 0;
+    this.h3 = (this.h3 + d) << 0;
+    this.h4 = (this.h4 + e) << 0;
+    this.h5 = (this.h5 + f) << 0;
+    this.h6 = (this.h6 + g) << 0;
+    this.h7 = (this.h7 + h) << 0;
   };
 
   Sha256.prototype.hex = function () {
@@ -1055,39 +1053,73 @@ function stringToArray(str) {
       h6 = this.h6,
       h7 = this.h7;
 
-    var hex = HEX_CHARS[(h0 >>> 28) & 0x0F] + HEX_CHARS[(h0 >>> 24) & 0x0F] +
-      HEX_CHARS[(h0 >>> 20) & 0x0F] + HEX_CHARS[(h0 >>> 16) & 0x0F] +
-      HEX_CHARS[(h0 >>> 12) & 0x0F] + HEX_CHARS[(h0 >>> 8) & 0x0F] +
-      HEX_CHARS[(h0 >>> 4) & 0x0F] + HEX_CHARS[h0 & 0x0F] +
-      HEX_CHARS[(h1 >>> 28) & 0x0F] + HEX_CHARS[(h1 >>> 24) & 0x0F] +
-      HEX_CHARS[(h1 >>> 20) & 0x0F] + HEX_CHARS[(h1 >>> 16) & 0x0F] +
-      HEX_CHARS[(h1 >>> 12) & 0x0F] + HEX_CHARS[(h1 >>> 8) & 0x0F] +
-      HEX_CHARS[(h1 >>> 4) & 0x0F] + HEX_CHARS[h1 & 0x0F] +
-      HEX_CHARS[(h2 >>> 28) & 0x0F] + HEX_CHARS[(h2 >>> 24) & 0x0F] +
-      HEX_CHARS[(h2 >>> 20) & 0x0F] + HEX_CHARS[(h2 >>> 16) & 0x0F] +
-      HEX_CHARS[(h2 >>> 12) & 0x0F] + HEX_CHARS[(h2 >>> 8) & 0x0F] +
-      HEX_CHARS[(h2 >>> 4) & 0x0F] + HEX_CHARS[h2 & 0x0F] +
-      HEX_CHARS[(h3 >>> 28) & 0x0F] + HEX_CHARS[(h3 >>> 24) & 0x0F] +
-      HEX_CHARS[(h3 >>> 20) & 0x0F] + HEX_CHARS[(h3 >>> 16) & 0x0F] +
-      HEX_CHARS[(h3 >>> 12) & 0x0F] + HEX_CHARS[(h3 >>> 8) & 0x0F] +
-      HEX_CHARS[(h3 >>> 4) & 0x0F] + HEX_CHARS[h3 & 0x0F] +
-      HEX_CHARS[(h4 >>> 28) & 0x0F] + HEX_CHARS[(h4 >>> 24) & 0x0F] +
-      HEX_CHARS[(h4 >>> 20) & 0x0F] + HEX_CHARS[(h4 >>> 16) & 0x0F] +
-      HEX_CHARS[(h4 >>> 12) & 0x0F] + HEX_CHARS[(h4 >>> 8) & 0x0F] +
-      HEX_CHARS[(h4 >>> 4) & 0x0F] + HEX_CHARS[h4 & 0x0F] +
-      HEX_CHARS[(h5 >>> 28) & 0x0F] + HEX_CHARS[(h5 >>> 24) & 0x0F] +
-      HEX_CHARS[(h5 >>> 20) & 0x0F] + HEX_CHARS[(h5 >>> 16) & 0x0F] +
-      HEX_CHARS[(h5 >>> 12) & 0x0F] + HEX_CHARS[(h5 >>> 8) & 0x0F] +
-      HEX_CHARS[(h5 >>> 4) & 0x0F] + HEX_CHARS[h5 & 0x0F] +
-      HEX_CHARS[(h6 >>> 28) & 0x0F] + HEX_CHARS[(h6 >>> 24) & 0x0F] +
-      HEX_CHARS[(h6 >>> 20) & 0x0F] + HEX_CHARS[(h6 >>> 16) & 0x0F] +
-      HEX_CHARS[(h6 >>> 12) & 0x0F] + HEX_CHARS[(h6 >>> 8) & 0x0F] +
-      HEX_CHARS[(h6 >>> 4) & 0x0F] + HEX_CHARS[h6 & 0x0F];
+    var hex =
+      HEX_CHARS[(h0 >>> 28) & 0x0f] +
+      HEX_CHARS[(h0 >>> 24) & 0x0f] +
+      HEX_CHARS[(h0 >>> 20) & 0x0f] +
+      HEX_CHARS[(h0 >>> 16) & 0x0f] +
+      HEX_CHARS[(h0 >>> 12) & 0x0f] +
+      HEX_CHARS[(h0 >>> 8) & 0x0f] +
+      HEX_CHARS[(h0 >>> 4) & 0x0f] +
+      HEX_CHARS[h0 & 0x0f] +
+      HEX_CHARS[(h1 >>> 28) & 0x0f] +
+      HEX_CHARS[(h1 >>> 24) & 0x0f] +
+      HEX_CHARS[(h1 >>> 20) & 0x0f] +
+      HEX_CHARS[(h1 >>> 16) & 0x0f] +
+      HEX_CHARS[(h1 >>> 12) & 0x0f] +
+      HEX_CHARS[(h1 >>> 8) & 0x0f] +
+      HEX_CHARS[(h1 >>> 4) & 0x0f] +
+      HEX_CHARS[h1 & 0x0f] +
+      HEX_CHARS[(h2 >>> 28) & 0x0f] +
+      HEX_CHARS[(h2 >>> 24) & 0x0f] +
+      HEX_CHARS[(h2 >>> 20) & 0x0f] +
+      HEX_CHARS[(h2 >>> 16) & 0x0f] +
+      HEX_CHARS[(h2 >>> 12) & 0x0f] +
+      HEX_CHARS[(h2 >>> 8) & 0x0f] +
+      HEX_CHARS[(h2 >>> 4) & 0x0f] +
+      HEX_CHARS[h2 & 0x0f] +
+      HEX_CHARS[(h3 >>> 28) & 0x0f] +
+      HEX_CHARS[(h3 >>> 24) & 0x0f] +
+      HEX_CHARS[(h3 >>> 20) & 0x0f] +
+      HEX_CHARS[(h3 >>> 16) & 0x0f] +
+      HEX_CHARS[(h3 >>> 12) & 0x0f] +
+      HEX_CHARS[(h3 >>> 8) & 0x0f] +
+      HEX_CHARS[(h3 >>> 4) & 0x0f] +
+      HEX_CHARS[h3 & 0x0f] +
+      HEX_CHARS[(h4 >>> 28) & 0x0f] +
+      HEX_CHARS[(h4 >>> 24) & 0x0f] +
+      HEX_CHARS[(h4 >>> 20) & 0x0f] +
+      HEX_CHARS[(h4 >>> 16) & 0x0f] +
+      HEX_CHARS[(h4 >>> 12) & 0x0f] +
+      HEX_CHARS[(h4 >>> 8) & 0x0f] +
+      HEX_CHARS[(h4 >>> 4) & 0x0f] +
+      HEX_CHARS[h4 & 0x0f] +
+      HEX_CHARS[(h5 >>> 28) & 0x0f] +
+      HEX_CHARS[(h5 >>> 24) & 0x0f] +
+      HEX_CHARS[(h5 >>> 20) & 0x0f] +
+      HEX_CHARS[(h5 >>> 16) & 0x0f] +
+      HEX_CHARS[(h5 >>> 12) & 0x0f] +
+      HEX_CHARS[(h5 >>> 8) & 0x0f] +
+      HEX_CHARS[(h5 >>> 4) & 0x0f] +
+      HEX_CHARS[h5 & 0x0f] +
+      HEX_CHARS[(h6 >>> 28) & 0x0f] +
+      HEX_CHARS[(h6 >>> 24) & 0x0f] +
+      HEX_CHARS[(h6 >>> 20) & 0x0f] +
+      HEX_CHARS[(h6 >>> 16) & 0x0f] +
+      HEX_CHARS[(h6 >>> 12) & 0x0f] +
+      HEX_CHARS[(h6 >>> 8) & 0x0f] +
+      HEX_CHARS[(h6 >>> 4) & 0x0f] +
+      HEX_CHARS[h6 & 0x0f];
     if (!this.is224) {
-      hex += HEX_CHARS[(h7 >>> 28) & 0x0F] + HEX_CHARS[(h7 >>> 24) & 0x0F] +
-        HEX_CHARS[(h7 >>> 20) & 0x0F] + HEX_CHARS[(h7 >>> 16) & 0x0F] +
-        HEX_CHARS[(h7 >>> 12) & 0x0F] + HEX_CHARS[(h7 >>> 8) & 0x0F] +
-        HEX_CHARS[(h7 >>> 4) & 0x0F] + HEX_CHARS[h7 & 0x0F];
+      hex +=
+        HEX_CHARS[(h7 >>> 28) & 0x0f] +
+        HEX_CHARS[(h7 >>> 24) & 0x0f] +
+        HEX_CHARS[(h7 >>> 20) & 0x0f] +
+        HEX_CHARS[(h7 >>> 16) & 0x0f] +
+        HEX_CHARS[(h7 >>> 12) & 0x0f] +
+        HEX_CHARS[(h7 >>> 8) & 0x0f] +
+        HEX_CHARS[(h7 >>> 4) & 0x0f] +
+        HEX_CHARS[h7 & 0x0f];
     }
     return hex;
   };
@@ -1107,41 +1139,41 @@ function stringToArray(str) {
       h7 = this.h7;
 
     var arr = [
-      (h0 >>> 24) & 0xFF,
-      (h0 >>> 16) & 0xFF,
-      (h0 >>> 8) & 0xFF,
-      h0 & 0xFF,
-      (h1 >>> 24) & 0xFF,
-      (h1 >>> 16) & 0xFF,
-      (h1 >>> 8) & 0xFF,
-      h1 & 0xFF,
-      (h2 >>> 24) & 0xFF,
-      (h2 >>> 16) & 0xFF,
-      (h2 >>> 8) & 0xFF,
-      h2 & 0xFF,
-      (h3 >>> 24) & 0xFF,
-      (h3 >>> 16) & 0xFF,
-      (h3 >>> 8) & 0xFF,
-      h3 & 0xFF,
-      (h4 >>> 24) & 0xFF,
-      (h4 >>> 16) & 0xFF,
-      (h4 >>> 8) & 0xFF,
-      h4 & 0xFF,
-      (h5 >>> 24) & 0xFF,
-      (h5 >>> 16) & 0xFF,
-      (h5 >>> 8) & 0xFF,
-      h5 & 0xFF,
-      (h6 >>> 24) & 0xFF,
-      (h6 >>> 16) & 0xFF,
-      (h6 >>> 8) & 0xFF,
-      h6 & 0xFF,
+      (h0 >>> 24) & 0xff,
+      (h0 >>> 16) & 0xff,
+      (h0 >>> 8) & 0xff,
+      h0 & 0xff,
+      (h1 >>> 24) & 0xff,
+      (h1 >>> 16) & 0xff,
+      (h1 >>> 8) & 0xff,
+      h1 & 0xff,
+      (h2 >>> 24) & 0xff,
+      (h2 >>> 16) & 0xff,
+      (h2 >>> 8) & 0xff,
+      h2 & 0xff,
+      (h3 >>> 24) & 0xff,
+      (h3 >>> 16) & 0xff,
+      (h3 >>> 8) & 0xff,
+      h3 & 0xff,
+      (h4 >>> 24) & 0xff,
+      (h4 >>> 16) & 0xff,
+      (h4 >>> 8) & 0xff,
+      h4 & 0xff,
+      (h5 >>> 24) & 0xff,
+      (h5 >>> 16) & 0xff,
+      (h5 >>> 8) & 0xff,
+      h5 & 0xff,
+      (h6 >>> 24) & 0xff,
+      (h6 >>> 16) & 0xff,
+      (h6 >>> 8) & 0xff,
+      h6 & 0xff,
     ];
     if (!this.is224) {
       arr.push(
-        (h7 >>> 24) & 0xFF,
-        (h7 >>> 16) & 0xFF,
-        (h7 >>> 8) & 0xFF,
-        h7 & 0xFF,
+        (h7 >>> 24) & 0xff,
+        (h7 >>> 16) & 0xff,
+        (h7 >>> 8) & 0xff,
+        h7 & 0xff,
       );
     }
     return arr;
@@ -1168,9 +1200,13 @@ function stringToArray(str) {
   };
 
   function HmacSha256(key, is224, sharedMemory) {
-    var i, type = typeof key;
+    var i,
+      type = typeof key;
     if (type === "string") {
-      var bytes = [], length = key.length, index = 0, code;
+      var bytes = [],
+        length = key.length,
+        index = 0,
+        code;
       for (i = 0; i < length; ++i) {
         code = key.charCodeAt(i);
         if (code < 0x80) {
@@ -1183,8 +1219,8 @@ function stringToArray(str) {
           bytes[index++] = 0x80 | ((code >>> 6) & 0x3f);
           bytes[index++] = 0x80 | (code & 0x3f);
         } else {
-          code = 0x10000 +
-            (((code & 0x3ff) << 10) | (key.charCodeAt(++i) & 0x3ff));
+          code =
+            0x10000 + (((code & 0x3ff) << 10) | (key.charCodeAt(++i) & 0x3ff));
           bytes[index++] = 0xf0 | (code >>> 18);
           bytes[index++] = 0x80 | ((code >>> 12) & 0x3f);
           bytes[index++] = 0x80 | ((code >>> 6) & 0x3f);
@@ -1209,10 +1245,11 @@ function stringToArray(str) {
     }
 
     if (key.length > 64) {
-      key = (new Sha256(is224, true)).update(key).array();
+      key = new Sha256(is224, true).update(key).array();
     }
 
-    var oKeyPad = [], iKeyPad = [];
+    var oKeyPad = [],
+      iKeyPad = [];
     for (i = 0; i < 64; ++i) {
       var b = key[i] || 0;
       oKeyPad[i] = 0x5c ^ b;
@@ -1335,16 +1372,16 @@ async function show_kv_page(env) {
       bodyContent: `
                 <label>ID：</label>
                 <input type="text" id="kv_id" placeholder="请输入ID" value="${
-        kv_id || ""
-      }" /><br/><br/>
+                  kv_id || ""
+                }" /><br/><br/>
                 <label>pDomain（逗号或换行分隔多个域名）：</label>
-                <textarea id="kv_pDomain" placeholder="例如 a.com,b.com" rows="4">${
-        kv_pDomain.join("\n")
-      }</textarea><br/><br/>
+                <textarea id="kv_pDomain" placeholder="例如 a.com,b.com" rows="4">${kv_pDomain.join(
+                  "\n",
+                )}</textarea><br/><br/>
                 <label>p64Domain（逗号或换行分隔多个域名）：</label>
-                <textarea id="kv_p64Domain" placeholder="例如 b.com,c.com" rows="4">${
-        kv_p64Domain.join("\n")
-      }</textarea><br/><br/>
+                <textarea id="kv_p64Domain" placeholder="例如 b.com,c.com" rows="4">${kv_p64Domain.join(
+                  "\n",
+                )}</textarea><br/><br/>
                 <button onclick="saveData()">保存</button>
                 <div id="saveStatus" style="margin-top:10px;color:green;"></div>
 
@@ -1414,82 +1451,84 @@ async function websvcExecutor(request) {
   let udpStreamWrite = null;
   let isDns = false;
 
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      async write(chunk, controller) {
-        if (isDns && udpStreamWrite) {
-          return udpStreamWrite(chunk);
-        }
-        if (remoteSocketWapper.value) {
-          const writer = remoteSocketWapper.value.writable.getWriter();
-          await writer.write(chunk);
-          writer.releaseLock();
-          return;
-        }
+  readableWebSocketStream
+    .pipeTo(
+      new WritableStream({
+        async write(chunk, controller) {
+          if (isDns && udpStreamWrite) {
+            return udpStreamWrite(chunk);
+          }
+          if (remoteSocketWapper.value) {
+            const writer = remoteSocketWapper.value.writable.getWriter();
+            await writer.write(chunk);
+            writer.releaseLock();
+            return;
+          }
 
-        const {
-          hasError,
-          //message,
-          portRemote = 443,
-          addressRemote = "",
-          rawDataIndex,
-          channelVersion = new Uint8Array([0, 0]),
-          isUDP,
-          addressType,
-        } = handleRequestHeader(chunk, id);
-        address = addressRemote;
-        portWithRandomLog = `${portRemote} ${isUDP ? "udp" : "tcp"} `;
-        log(
-          `handleRequestHeader-->${addressType} Processing TCP outbound connection ${addressRemote}:${portRemote}`,
-        );
+          const {
+            hasError,
+            //message,
+            portRemote = 443,
+            addressRemote = "",
+            rawDataIndex,
+            channelVersion = new Uint8Array([0, 0]),
+            isUDP,
+            addressType,
+          } = handleRequestHeader(chunk, id);
+          address = addressRemote;
+          portWithRandomLog = `${portRemote} ${isUDP ? "udp" : "tcp"} `;
+          log(
+            `handleRequestHeader-->${addressType} Processing TCP outbound connection ${addressRemote}:${portRemote}`,
+          );
 
-        if (hasError) {
-          throw new Error(message);
-        }
+          if (hasError) {
+            throw new Error(message);
+          }
 
-        if (isUDP && portRemote !== 53) {
-          throw new Error("UDP proxy only enabled for DNS which is port 53");
-        }
+          if (isUDP && portRemote !== 53) {
+            throw new Error("UDP proxy only enabled for DNS which is port 53");
+          }
 
-        if (isUDP && portRemote === 53) {
-          isDns = true;
-        }
+          if (isUDP && portRemote === 53) {
+            isDns = true;
+          }
 
-        const channelResponseHeader = new Uint8Array([channelVersion[0], 0]);
-        const rawClientData = chunk.slice(rawDataIndex);
+          const channelResponseHeader = new Uint8Array([channelVersion[0], 0]);
+          const rawClientData = chunk.slice(rawDataIndex);
 
-        if (isDns) {
-          const { write } = await handleUPOut(
+          if (isDns) {
+            const { write } = await handleUPOut(
+              webSocket,
+              channelResponseHeader,
+              log,
+            );
+            udpStreamWrite = write;
+            udpStreamWrite(rawClientData);
+            return;
+          }
+
+          handleTPOut(
+            remoteSocketWapper,
+            addressRemote,
+            portRemote,
+            rawClientData,
             webSocket,
             channelResponseHeader,
             log,
+            addressType,
           );
-          udpStreamWrite = write;
-          udpStreamWrite(rawClientData);
-          return;
-        }
-
-        handleTPOut(
-          remoteSocketWapper,
-          addressRemote,
-          portRemote,
-          rawClientData,
-          webSocket,
-          channelResponseHeader,
-          log,
-          addressType,
-        );
-      },
-      close() {
-        log(`readableWebSocketStream is close`);
-      },
-      abort(reason) {
-        log(`readableWebSocketStream is abort`, JSON.stringify(reason));
-      },
-    }),
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
+        },
+        close() {
+          log(`readableWebSocketStream is close`);
+        },
+        abort(reason) {
+          log(`readableWebSocketStream is abort`, JSON.stringify(reason));
+        },
+      }),
+    )
+    .catch((err) => {
+      log("readableWebSocketStream pipeTo error", err);
+    });
 
   return new Response(null, {
     status: 101,
@@ -1552,16 +1591,18 @@ async function websvcExecutorTr(request) {
     );
   };
 
-  readableWebSocketStream.pipeTo(
-    new WritableStream({
-      write: handleStreamData,
-      close: () => log("readableWebSocketStream is closed"),
-      abort: (reason) =>
-        log("readableWebSocketStream is aborted", JSON.stringify(reason)),
-    }),
-  ).catch((err) => {
-    log("readableWebSocketStream pipeTo error", err);
-  });
+  readableWebSocketStream
+    .pipeTo(
+      new WritableStream({
+        write: handleStreamData,
+        close: () => log("readableWebSocketStream is closed"),
+        abort: (reason) =>
+          log("readableWebSocketStream is aborted", JSON.stringify(reason)),
+      }),
+    )
+    .catch((err) => {
+      log("readableWebSocketStream pipeTo error", err);
+    });
 
   return new Response(null, {
     status: 101,
@@ -1641,11 +1682,13 @@ async function handleTPOut(
     log(
       `[retry]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`,
     );
-    tcpS.closed.catch((error) => {
-      log("[retry]--> tcpS closed error", error);
-    }).finally(() => {
-      closeDataStream(pipe);
-    });
+    tcpS.closed
+      .catch((error) => {
+        log("[retry]--> tcpS closed error", error);
+      })
+      .finally(() => {
+        closeDataStream(pipe);
+      });
     transferDataStream(tcpS, pipe, channelResponseHeader, null, log);
   }
 
@@ -1658,11 +1701,13 @@ async function handleTPOut(
     log(
       `[nat64]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`,
     );
-    tcpS.closed.catch((error) => {
-      log("[nat64]--> tcpS closed error", error);
-    }).finally(() => {
-      closeDataStream(pipe);
-    });
+    tcpS.closed
+      .catch((error) => {
+        log("[nat64]--> tcpS closed error", error);
+      })
+      .finally(() => {
+        closeDataStream(pipe);
+      });
     transferDataStream(tcpS, pipe, channelResponseHeader, null, log);
   }
 
@@ -1725,8 +1770,7 @@ async function transferDataStream(
   await remoteS.readable
     .pipeTo(
       new WritableStream({
-        start() {
-        },
+        start() {},
         async write(chunk, controller) {
           hasIncomingData = true;
           remoteChunkCount++;
@@ -1772,10 +1816,9 @@ async function transferDataStream(
 async function handleUPOut(pipe, channelResponseHeader, log) {
   let ischannelHeaderSent = false;
   const transformStream = new TransformStream({
-    start(controller) {
-    },
+    start(controller) {},
     transform(chunk, controller) {
-      for (let index = 0; index < chunk.byteLength;) {
+      for (let index = 0; index < chunk.byteLength; ) {
         const lengthBuffer = chunk.slice(index, index + 2);
         const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
         const udpData = new Uint8Array(
@@ -1785,51 +1828,52 @@ async function handleUPOut(pipe, channelResponseHeader, log) {
         controller.enqueue(udpData);
       }
     },
-    flush(controller) {
-    },
+    flush(controller) {},
   });
 
-  transformStream.readable.pipeTo(
-    new WritableStream({
-      async write(chunk) {
-        const resp = await fetch(
-          durl, // dns server url
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/dns-message",
+  transformStream.readable
+    .pipeTo(
+      new WritableStream({
+        async write(chunk) {
+          const resp = await fetch(
+            durl, // dns server url
+            {
+              method: "POST",
+              headers: {
+                "content-type": "application/dns-message",
+              },
+              body: chunk,
             },
-            body: chunk,
-          },
-        );
-        const dnsQueryResult = await resp.arrayBuffer();
-        const udpSize = dnsQueryResult.byteLength;
-        const udpSizeBuffer = new Uint8Array([
-          (udpSize >> 8) & 0xff,
-          udpSize & 0xff,
-        ]);
-        if (pipe.readyState === WS_READY_STATE_OPEN) {
-          log(`doh success and dns message length is ${udpSize}`);
-          if (ischannelHeaderSent) {
-            pipe.send(
-              await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer(),
-            );
-          } else {
-            pipe.send(
-              await new Blob([
-                channelResponseHeader,
-                udpSizeBuffer,
-                dnsQueryResult,
-              ]).arrayBuffer(),
-            );
-            ischannelHeaderSent = true;
+          );
+          const dnsQueryResult = await resp.arrayBuffer();
+          const udpSize = dnsQueryResult.byteLength;
+          const udpSizeBuffer = new Uint8Array([
+            (udpSize >> 8) & 0xff,
+            udpSize & 0xff,
+          ]);
+          if (pipe.readyState === WS_READY_STATE_OPEN) {
+            log(`doh success and dns message length is ${udpSize}`);
+            if (ischannelHeaderSent) {
+              pipe.send(
+                await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer(),
+              );
+            } else {
+              pipe.send(
+                await new Blob([
+                  channelResponseHeader,
+                  udpSizeBuffer,
+                  dnsQueryResult,
+                ]).arrayBuffer(),
+              );
+              ischannelHeaderSent = true;
+            }
           }
-        }
-      },
-    }),
-  ).catch((error) => {
-    error("dns udp has error" + error);
-  });
+        },
+      }),
+    )
+    .catch((error) => {
+      error("dns udp has error" + error);
+    });
 
   const writer = transformStream.writable.getWriter();
 
@@ -1892,10 +1936,12 @@ async function serviceCall(ipType, remoteIp, remotePort, log) {
       case 3:
         DSTADDR = new Uint8Array([
           4,
-          ...remoteIp.split(":").flatMap((x) => [
-            parseInt(x.slice(0, 2), 16),
-            parseInt(x.slice(2), 16),
-          ]),
+          ...remoteIp
+            .split(":")
+            .flatMap((x) => [
+              parseInt(x.slice(0, 2), 16),
+              parseInt(x.slice(2), 16),
+            ]),
         ]);
         break;
       default:
@@ -1948,7 +1994,7 @@ function handleRequestHeader(channelBuffer, id) {
 
   isValidUser =
     uuids.some((userUuid) => slicedBufferString === userUuid.trim()) ||
-    uuids.length === 1 && slicedBufferString === uuids[0].trim();
+    (uuids.length === 1 && slicedBufferString === uuids[0].trim());
   if (!isValidUser) {
     return {
       hasError: true,
@@ -1968,8 +2014,7 @@ function handleRequestHeader(channelBuffer, id) {
   } else {
     return {
       hasError: true,
-      message:
-        `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
+      message: `command ${command} is not support, command 01-tcp,02-udp,03-mux`,
     };
   }
   const portIndex = 18 + optLength + 1;
@@ -2163,7 +2208,7 @@ function closeDataStream(socket) {
 async function login(request, env) {
   const headers = {
     "Content-Type": "text/html; charset=UTF-8",
-    "referer": "https://www.google.com/search?q=" + fname,
+    referer: "https://www.google.com/search?q=" + fname,
   };
   if (request.method === "POST") {
     const formData = await request.formData();

@@ -39,12 +39,12 @@ const NAT64_PREFIX = "2602:fc59:b0:64::";
 // 优选域名/IP 列表
 // 用于生成 VLESS 订阅链接，提供多个配置选项
 const BEST_DOMAINS = [
-  "bestcf.030101.xyz:443",   // 优选 CF 域名
-  "japan.com:443",           // 日本节点
-  "www.visa.com.sg:443",     // 新加坡签证网站
-  "www.visa.com.hk:443",     // 香港签证网站
-  "icook.hk:443",            // 香港 iCook 网站
-  "icook.tw:443",            // 台湾 iCook 网站
+  "bestcf.030101.xyz:443", // 优选 CF 域名
+  "japan.com:443", // 日本节点
+  "www.visa.com.sg:443", // 新加坡签证网站
+  "www.visa.com.hk:443", // 香港签证网站
+  "icook.hk:443", // 香港 iCook 网站
+  "icook.tw:443", // 台湾 iCook 网站
 ];
 
 // ============ 主入口函数 ============
@@ -137,21 +137,21 @@ function gen_links(workerDomain) {
 
     // WebSocket 参数配置
     const wsParams = new URLSearchParams({
-      encryption: "none",      // 无加密（VLESS 特性）
-      security: "tls",         // 使用 TLS 加密
-      sni: workerDomain,       // SNI 指纹
-      fp: "chrome",            // 浏览器指纹
-      type: "ws",              // WebSocket 类型
-      host: workerDomain,      // 主机头
-      path: wsPath,            // WebSocket 路径
+      encryption: "none", // 无加密（VLESS 特性）
+      security: "tls", // 使用 TLS 加密
+      sni: workerDomain, // SNI 指纹
+      fp: "chrome", // 浏览器指纹
+      type: "ws", // WebSocket 类型
+      host: workerDomain, // 主机头
+      path: wsPath, // WebSocket 路径
     });
 
     // 拼接 VLESS 链接
     // 格式: vless://UUID@server:port?params#name
     links.push(
-      `${proto}://${UUID}@${item}?${wsParams.toString()}#${
-        encodeURIComponent(name)
-      }`,
+      `${proto}://${UUID}@${item}?${wsParams.toString()}#${encodeURIComponent(
+        name,
+      )}`,
     );
   });
 
@@ -187,8 +187,8 @@ function convertToRouteX(ipv4Address) {
 
   // 构造 IPv6 的后缀部分
   // 格式: aabb:ccdd (每两个字节一组)
-  const ipv6Tail = `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`
-    .toLowerCase();
+  const ipv6Tail =
+    `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`.toLowerCase();
 
   // 组合完整的 IPv6 地址
   const fullIPv6 = `${NAT64_PREFIX}${ipv6Tail}`;
@@ -225,8 +225,8 @@ async function resolveDomainToRouteX(domain) {
     const result = await response.json();
 
     // 查找 A 记录（type = 1）
-    const aRecord = result?.Answer?.find((record) =>
-      record.type === 1 && record.data
+    const aRecord = result?.Answer?.find(
+      (record) => record.type === 1 && record.data,
     );
 
     if (!aRecord) {
@@ -284,16 +284,16 @@ async function handle_ws(req) {
   // 格式: user:pass@host:port 或 host:port
   const socks5 = path.includes("@")
     ? (() => {
-      const [cred, server] = path.split("@");
-      const [user, pass] = cred.split(":");
-      const [host, port = 443] = server.split(":");
-      return {
-        user,
-        pass,
-        host,
-        port: +port,
-      };
-    })()
+        const [cred, server] = path.split("@");
+        const [user, pass] = cred.split(":");
+        const [host, port = 443] = server.split(":");
+        return {
+          user,
+          pass,
+          host,
+          port: +port,
+        };
+      })()
     : null;
 
   // 设置代理服务器 IP
@@ -323,9 +323,9 @@ async function handle_ws(req) {
 
   // ============ 状态变量 ============
 
-  let remote = null,      // 远程连接 socket
-    udpWriter = null,      // UDP 写入器（用于 DNS 代理）
-    isDNS = false;         // 是否为 DNS 请求
+  let remote = null, // 远程连接 socket
+    udpWriter = null, // UDP 写入器（用于 DNS 代理）
+    isDNS = false; // 是否为 DNS 请求
 
   // ============ SOCKS5 连接函数 ============
 
@@ -369,14 +369,14 @@ async function handle_ws(req) {
     const domain = new TextEncoder().encode(targetHost);
     await w.write(
       new Uint8Array([
-        5,                  // SOCKS 版本 5
-        1,                  // CONNECT 命令
-        0,                  // 保留
-        3,                  // 地址类型：域名
-        domain.length,      // 域名长度
-        ...domain,          // 域名
-        targetPort >> 8,    // 端口高字节
-        targetPort & 0xff,  // 端口低字节
+        5, // SOCKS 版本 5
+        1, // CONNECT 命令
+        0, // 保留
+        3, // 地址类型：域名
+        domain.length, // 域名长度
+        ...domain, // 域名
+        targetPort >> 8, // 端口高字节
+        targetPort & 0xff, // 端口低字节
       ]),
     );
 
@@ -423,226 +423,217 @@ async function handle_ws(req) {
         } catch {}
       }
     },
-  }).pipeTo(
-    // 可写流：处理 VLESS 协议和数据转发
-    new WritableStream({
-      async write(data) {
-        // ============ 数据转发逻辑 ============
+  })
+    .pipeTo(
+      // 可写流：处理 VLESS 协议和数据转发
+      new WritableStream({
+        async write(data) {
+          // ============ 数据转发逻辑 ============
 
-        // 如果是 DNS 请求，使用 UDP 写入器
-        if (isDNS) return udpWriter?.write(data);
+          // 如果是 DNS 请求，使用 UDP 写入器
+          if (isDNS) return udpWriter?.write(data);
 
-        // 如果已建立远程连接，直接转发数据
-        if (remote) {
-          const w = remote.writable.getWriter();
-          await w.write(data);
-          w.releaseLock();
-          return;
-        }
-
-        // 数据太短，不是有效的 VLESS 协议数据
-        if (data.byteLength < 24) return;
-
-        // ============ 解析 VLESS 请求头 ============
-
-        // 验证 UUID（位置: 1-16 字节）
-        const uuidBytes = new Uint8Array(data.slice(1, 17));
-        const expectedUUID = UUID.replace(/-/g, "");
-        for (let i = 0; i < 16; i++) {
-          if (
-            uuidBytes[i] !== parseInt(expectedUUID.substr(i * 2, 2), 16)
-          ) return;
-        }
-
-        // 解析 VLESS 协议头
-        const view = new DataView(data);
-        const optLen = view.getUint8(17);            // 选项长度
-        const cmd = view.getUint8(18 + optLen);       // 命令类型 (1=TCP, 2=UDP)
-
-        // 只支持 TCP CONNECT 和 UDP 关联
-        if (cmd !== 1 && cmd !== 2) return;
-
-        // ============ 解析目标地址 ============
-
-        let pos = 19 + optLen;                       // 起始位置
-        const port = view.getUint16(pos);            // 端口号
-        const type = view.getUint8(pos + 2);         // 地址类型
-        pos += 3;
-
-        let addr = "";                               // 目标地址
-        if (type === 1) {
-          // IPv4 地址 (4 字节)
-          addr = `${view.getUint8(pos)}.${view.getUint8(pos + 1)}.${
-            view.getUint8(pos + 2)
-          }.${view.getUint8(pos + 3)}`;
-          pos += 4;
-        } else if (type === 2) {
-          // 域名 (1 字节长度 + 字符串)
-          const len = view.getUint8(pos++);
-          addr = new TextDecoder().decode(data.slice(pos, pos + len));
-          pos += len;
-        } else if (type === 3) {
-          // IPv6 地址 (16 字节)
-          const ipv6 = [];
-          for (let i = 0; i < 8; i++, pos += 2) {
-            ipv6.push(
-              view.getUint16(pos)
-                .toString(16),
-            );
+          // 如果已建立远程连接，直接转发数据
+          if (remote) {
+            const w = remote.writable.getWriter();
+            await w.write(data);
+            w.releaseLock();
+            return;
           }
-          addr = ipv6.join(":");
-        } else return; // 不支持的地址类型
 
-        // 提取协议头和负载数据
-        const header = new Uint8Array([data[0], 0]);  // 响应头
-        const payload = data.slice(pos);              // 实际负载
+          // 数据太短，不是有效的 VLESS 协议数据
+          if (data.byteLength < 24) return;
 
-        // ============ 处理 UDP DNS 请求 ============
+          // ============ 解析 VLESS 请求头 ============
 
-        // UDP 命令：DNS 代理（端口 53）
-        if (cmd === 2) {
-          if (port !== 53) return;  // 只允许 DNS 端口
-          isDNS = true;
+          // 验证 UUID（位置: 1-16 字节）
+          const uuidBytes = new Uint8Array(data.slice(1, 17));
+          const expectedUUID = UUID.replace(/-/g, "");
+          for (let i = 0; i < 16; i++) {
+            if (uuidBytes[i] !== parseInt(expectedUUID.substr(i * 2, 2), 16))
+              return;
+          }
 
-          let sent = false;
-          // 创建转换流拆分 UDP 数据包
-          const {
-            readable,
-            writable,
-          } = new TransformStream({
-            transform(chunk, ctrl) {
-              // 解析 UDP 包长度前缀
-              for (let i = 0; i < chunk.byteLength;) {
-                const len = new DataView(chunk.slice(i, i + 2))
-                  .getUint16(0);
-                ctrl.enqueue(chunk.slice(i + 2, i + 2 + len));
-                i += 2 + len;
-              }
-            },
-          });
+          // 解析 VLESS 协议头
+          const view = new DataView(data);
+          const optLen = view.getUint8(17); // 选项长度
+          const cmd = view.getUint8(18 + optLen); // 命令类型 (1=TCP, 2=UDP)
 
-          // 将 DNS 查询转发到 DoH 服务
-          readable.pipeTo(
-            new WritableStream({
-              async write(query) {
-                try {
-                  const resp = await fetch(
-                    "https://1.1.1.1/dns-query",
-                    {
+          // 只支持 TCP CONNECT 和 UDP 关联
+          if (cmd !== 1 && cmd !== 2) return;
+
+          // ============ 解析目标地址 ============
+
+          let pos = 19 + optLen; // 起始位置
+          const port = view.getUint16(pos); // 端口号
+          const type = view.getUint8(pos + 2); // 地址类型
+          pos += 3;
+
+          let addr = ""; // 目标地址
+          if (type === 1) {
+            // IPv4 地址 (4 字节)
+            addr = `${view.getUint8(pos)}.${view.getUint8(pos + 1)}.${view.getUint8(
+              pos + 2,
+            )}.${view.getUint8(pos + 3)}`;
+            pos += 4;
+          } else if (type === 2) {
+            // 域名 (1 字节长度 + 字符串)
+            const len = view.getUint8(pos++);
+            addr = new TextDecoder().decode(data.slice(pos, pos + len));
+            pos += len;
+          } else if (type === 3) {
+            // IPv6 地址 (16 字节)
+            const ipv6 = [];
+            for (let i = 0; i < 8; i++, pos += 2) {
+              ipv6.push(view.getUint16(pos).toString(16));
+            }
+            addr = ipv6.join(":");
+          } else return; // 不支持的地址类型
+
+          // 提取协议头和负载数据
+          const header = new Uint8Array([data[0], 0]); // 响应头
+          const payload = data.slice(pos); // 实际负载
+
+          // ============ 处理 UDP DNS 请求 ============
+
+          // UDP 命令：DNS 代理（端口 53）
+          if (cmd === 2) {
+            if (port !== 53) return; // 只允许 DNS 端口
+            isDNS = true;
+
+            let sent = false;
+            // 创建转换流拆分 UDP 数据包
+            const { readable, writable } = new TransformStream({
+              transform(chunk, ctrl) {
+                // 解析 UDP 包长度前缀
+                for (let i = 0; i < chunk.byteLength; ) {
+                  const len = new DataView(chunk.slice(i, i + 2)).getUint16(0);
+                  ctrl.enqueue(chunk.slice(i + 2, i + 2 + len));
+                  i += 2 + len;
+                }
+              },
+            });
+
+            // 将 DNS 查询转发到 DoH 服务
+            readable.pipeTo(
+              new WritableStream({
+                async write(query) {
+                  try {
+                    const resp = await fetch("https://1.1.1.1/dns-query", {
                       method: "POST",
                       headers: {
                         "content-type": "application/dns-message",
                       },
                       body: query,
-                    },
-                  );
+                    });
+                    if (ws.readyState === 1) {
+                      const result = new Uint8Array(await resp.arrayBuffer());
+                      // 发送 DNS 响应
+                      ws.send(
+                        new Uint8Array([
+                          ...(sent ? [] : header),
+                          result.length >> 8, // 长度高字节
+                          result.length & 0xff, // 长度低字节
+                          ...result,
+                        ]),
+                      );
+                      sent = true;
+                    }
+                  } catch {}
+                },
+              }),
+            );
+            udpWriter = writable.getWriter();
+            return udpWriter.write(payload);
+          }
+
+          // ============ 处理 TCP 连接 ============
+
+          // 尝试各种连接方式直到成功
+          let sock = null;
+          for (const method of getOrder()) {
+            try {
+              // 方式1: 直连
+              if (method === "direct") {
+                sock = connect({
+                  hostname: addr,
+                  port,
+                });
+                await sock.opened;
+                break;
+              }
+              // 方式2: SOCKS5 代理
+              else if (method === "s5" && socks5) {
+                sock = await socks5Connect(addr, port);
+                break;
+              }
+              // 方式3: 代理服务器
+              else if (method === "proxy" && PROXY_IP) {
+                const [ph, pp = port] = PROXY_IP.split(":");
+                sock = connect({
+                  hostname: ph,
+                  port: +pp || port,
+                });
+                await sock.opened;
+                break;
+              }
+              // 方式4: NAT64 模式
+              else if (method === "nat64") {
+                let targetHost = addr;
+
+                // 如果是域名，解析为 NAT64 IPv6
+                if (type === 2) {
+                  targetHost = await resolveDomainToRouteX(addr);
+                } else if (type === 1) {
+                  // 如果是 IPv4，转换为 NAT64 IPv6
+                  targetHost = convertToRouteX(addr);
+                }
+                // 如果是 IPv6，直接使用
+
+                sock = connect({
+                  hostname: targetHost,
+                  port,
+                });
+                await sock.opened;
+                break;
+              }
+            } catch {}
+          }
+
+          // 所有方式都失败
+          if (!sock) return;
+
+          // ============ 建立数据流转发 ============
+
+          remote = sock;
+          const w = sock.writable.getWriter();
+          await w.write(payload); // 发送初始数据
+          w.releaseLock();
+
+          let sent = false;
+          // 转发远程数据到 WebSocket
+          sock.readable
+            .pipeTo(
+              new WritableStream({
+                write(chunk) {
                   if (ws.readyState === 1) {
-                    const result = new Uint8Array(
-                      await resp.arrayBuffer(),
-                    );
-                    // 发送 DNS 响应
                     ws.send(
-                      new Uint8Array([
-                        ...(sent ? [] : header),
-                        result.length >> 8,  // 长度高字节
-                        result.length & 0xff, // 长度低字节
-                        ...result,
-                      ]),
+                      sent
+                        ? chunk
+                        : new Uint8Array([...header, ...new Uint8Array(chunk)]),
                     );
                     sent = true;
                   }
-                } catch {}
-              },
-            }),
-          );
-          udpWriter = writable.getWriter();
-          return udpWriter.write(payload);
-        }
-
-        // ============ 处理 TCP 连接 ============
-
-        // 尝试各种连接方式直到成功
-        let sock = null;
-        for (const method of getOrder()) {
-          try {
-            // 方式1: 直连
-            if (method === "direct") {
-              sock = connect({
-                hostname: addr,
-                port,
-              });
-              await sock.opened;
-              break;
-            }
-            // 方式2: SOCKS5 代理
-            else if (method === "s5" && socks5) {
-              sock = await socks5Connect(addr, port);
-              break;
-            }
-            // 方式3: 代理服务器
-            else if (method === "proxy" && PROXY_IP) {
-              const [ph, pp = port] = PROXY_IP.split(":");
-              sock = connect({
-                hostname: ph,
-                port: +pp || port,
-              });
-              await sock.opened;
-              break;
-            }
-            // 方式4: NAT64 模式
-            else if (method === "nat64") {
-              let targetHost = addr;
-
-              // 如果是域名，解析为 NAT64 IPv6
-              if (type === 2) {
-                targetHost = await resolveDomainToRouteX(addr);
-              } else if (type === 1) {
-                // 如果是 IPv4，转换为 NAT64 IPv6
-                targetHost = convertToRouteX(addr);
-              }
-              // 如果是 IPv6，直接使用
-
-              sock = connect({
-                hostname: targetHost,
-                port,
-              });
-              await sock.opened;
-              break;
-            }
-          } catch {}
-        }
-
-        // 所有方式都失败
-        if (!sock) return;
-
-        // ============ 建立数据流转发 ============
-
-        remote = sock;
-        const w = sock.writable.getWriter();
-        await w.write(payload);  // 发送初始数据
-        w.releaseLock();
-
-        let sent = false;
-        // 转发远程数据到 WebSocket
-        sock.readable.pipeTo(
-          new WritableStream({
-            write(chunk) {
-              if (ws.readyState === 1) {
-                ws.send(
-                  sent
-                    ? chunk
-                    : new Uint8Array([...header, ...new Uint8Array(chunk)]),
-                );
-                sent = true;
-              }
-            },
-            close: () => ws.readyState === 1 && ws.close(),
-            abort: () => ws.readyState === 1 && ws.close(),
-          }),
-        ).catch(() => {});
-      },
-    }),
-  ).catch(() => {});
+                },
+                close: () => ws.readyState === 1 && ws.close(),
+                abort: () => ws.readyState === 1 && ws.close(),
+              }),
+            )
+            .catch(() => {});
+        },
+      }),
+    )
+    .catch(() => {});
 
   // 返回 WebSocket 响应
   return new Response(null, {
