@@ -76,7 +76,7 @@ let parsedS5 = {};
 
 // DNS 代理服务 URL（用于 UDP DNS 代理）
 let durl = atob(
-  "aHR0cHM6Ly9za3kucmV0aGlua2Rucy5jb20vMTotUGZfX19fXzlfOEFfQU1BSWdFOGtNQUJWRERtS09IVEFLZz0="
+  "aHR0cHM6Ly9za3kucmV0aGlua2Rucy5jb20vMTotUGZfX19fXzlfOEFfQU1BSWdFOGtNQUJWRERtS09IVEFLZz0=",
 );
 
 // 项目名称（Base64 编码）- 用于页面标题显示
@@ -92,7 +92,7 @@ let enableLog = false;
 
 // YouTube 频道链接 - 解码后: https://youtube.com/@am_clubs?sub_confirmation=1
 let ytName = atob(
-  "aHR0cHM6Ly95b3V0dWJlLmNvbS9AYW1fY2x1YnM/c3ViX2NvbmZpcm1hdGlvbj0x"
+  "aHR0cHM6Ly95b3V0dWJlLmNvbS9AYW1fY2x1YnM/c3ViX2NvbmZpcm1hdGlvbj0x",
 );
 
 // Telegram 频道链接 - 解码后: https://t.me/am_clubs
@@ -141,8 +141,8 @@ export default {
         kvData = (await get_kv(env)) || {};
         log(
           `[fetch]--> kv_id = ${kvData.kv_id}, kv_pDomain = ${JSON.stringify(
-            kvData.pDomain
-          )}, kv_p64Domain = ${JSON.stringify(kvData.kv_p64Domain)}`
+            kvData.pDomain,
+          )}, kv_p64Domain = ${JSON.stringify(kvData.kv_p64Domain)}`,
         );
       }
 
@@ -184,7 +184,7 @@ export default {
         return await websvcExecutor(request);
       }
       switch (url.pathname.toLowerCase()) {
-        case "/"+id: {
+        case "/" + id: {
           // 显示 KV 页面登录成功
           return await show_kv_page(env);
         }
@@ -329,7 +329,7 @@ function requestParser(s5) {
     const formers = former.split(":");
     if (formers.length !== 2) {
       throw new Error(
-        'Invalid S address format: authentication must be in the "username:password" format'
+        'Invalid S address format: authentication must be in the "username:password" format',
       );
     }
     [username, password] = formers;
@@ -345,7 +345,7 @@ function requestParser(s5) {
   const isIPv6 = hostname.includes(":") && !/^\[.*\]$/.test(hostname);
   if (isIPv6) {
     throw new Error(
-      "Invalid S address format: IPv6 addresses must be enclosed in brackets, e.g., [2001:db8::1]"
+      "Invalid S address format: IPv6 addresses must be enclosed in brackets, e.g., [2001:db8::1]",
     );
   }
 
@@ -408,18 +408,18 @@ async function getDomainToRouteX(
   addressRemote,
   portRemote,
   s5Enable,
-  p64Flag = false
+  p64Flag = false,
 ) {
   let finalTargetHost = addressRemote;
   let finalTargetPort = portRemote;
   try {
     log(
-      `[getDomainToRouteX]--> paddr=${paddr}, p64Prefix=${p64Prefix}, addressRemote=${addressRemote}, p64=${p64}`
+      `[getDomainToRouteX]--> paddr=${paddr}, p64Prefix=${p64Prefix}, addressRemote=${addressRemote}, p64=${p64}`,
     );
     log(
       `[getDomainToRouteX]--> pDomain=${JSON.stringify(pDomain)}, p64Domain=${JSON.stringify(
-        p64Domain
-      )}`
+        p64Domain,
+      )}`,
     );
 
     const safeMatch = (domains, target) => {
@@ -437,7 +437,7 @@ async function getDomainToRouteX(
     const resultDomain = safeMatch(pDomain, addressRemote);
     const result64Domain = safeMatch(p64Domain, addressRemote);
     log(
-      `[getDomainToRouteX]--> match pDomain=${resultDomain}, match p64Domain=${result64Domain}, p64Flag=${p64Flag}`
+      `[getDomainToRouteX]--> match pDomain=${resultDomain}, match p64Domain=${result64Domain}, p64Flag=${p64Flag}`,
     );
 
     if (s5Enable) {
@@ -446,14 +446,14 @@ async function getDomainToRouteX(
       finalTargetHost = paddr;
       finalTargetPort = pnum || portRemote;
       log(
-        `[getDomainToRouteX]--> Matched pDomain, use paddr=${finalTargetHost}, port=${finalTargetPort}`
+        `[getDomainToRouteX]--> Matched pDomain, use paddr=${finalTargetHost}, port=${finalTargetPort}`,
       );
     } else if (result64Domain || (p64Flag && p64)) {
       try {
         finalTargetHost = await resolveDomainToRouteX(addressRemote);
         finalTargetPort = portRemote;
         log(
-          `[getDomainToRouteX]--> Resolved p64Domain via resolveDomainToRouteX: ${finalTargetHost}`
+          `[getDomainToRouteX]--> Resolved p64Domain via resolveDomainToRouteX: ${finalTargetHost}`,
         );
       } catch (err) {
         log(`[retry]--> resolveDomainToRouteX failed: ${err.message}`);
@@ -464,12 +464,12 @@ async function getDomainToRouteX(
       finalTargetHost = paddr || addressRemote;
       finalTargetPort = portRemote;
       log(
-        `[getDomainToRouteX]--> fallback by p64Flag, host=${finalTargetHost}, port=${finalTargetPort}`
+        `[getDomainToRouteX]--> fallback by p64Flag, host=${finalTargetHost}, port=${finalTargetPort}`,
       );
     }
 
     log(
-      `[getDomainToRouteX]--> Final target: ${finalTargetHost}:${finalTargetPort}`
+      `[getDomainToRouteX]--> Final target: ${finalTargetHost}:${finalTargetPort}`,
     );
     return { finalTargetHost, finalTargetPort };
   } catch (err) {
@@ -478,7 +478,7 @@ async function getDomainToRouteX(
       finalTargetHost = paddr || addressRemote;
       finalTargetPort = portRemote;
       log(
-        `[fatal-fallback]--> fallback by p64Flag, host=${finalTargetHost}, port=${finalTargetPort}`
+        `[fatal-fallback]--> fallback by p64Flag, host=${finalTargetHost}, port=${finalTargetPort}`,
       );
     }
     return { finalTargetHost, finalTargetPort };
@@ -521,16 +521,16 @@ async function resolveDomainToRouteX(domain) {
     });
     if (!response.ok) {
       throw new Error(
-        `[resolveDomainToRouteX] request failed with status code: ${response.status}`
+        `[resolveDomainToRouteX] request failed with status code: ${response.status}`,
       );
     }
 
     const result = await response.json();
     log(
-      `[resolveDomainToRouteX] Query result: ${JSON.stringify(result, null, 2)}`
+      `[resolveDomainToRouteX] Query result: ${JSON.stringify(result, null, 2)}`,
     );
     const aRecord = result?.Answer?.find(
-      (record) => record.type === 1 && record.data
+      (record) => record.type === 1 && record.data,
     );
     if (!aRecord) {
       throw new Error("No valid A record found");
@@ -543,7 +543,7 @@ async function resolveDomainToRouteX(domain) {
   } catch (err) {
     error(`[Error] Failed to get routeX address: ${err.message}`);
     throw new Error(
-      `[resolveDomainToRouteX] resolution failed: ${err.message}`
+      `[resolveDomainToRouteX] resolution failed: ${err.message}`,
     );
   }
 }
@@ -569,7 +569,7 @@ function convertToRouteX(ipv4Address) {
     !p64Prefix.includes("::")
   ) {
     throw new Error(
-      "[convertToRouteX] Invalid manual prefix; must be a valid IPv6 prefix"
+      "[convertToRouteX] Invalid manual prefix; must be a valid IPv6 prefix",
     );
   }
   const ipv6Tail =
@@ -1180,7 +1180,7 @@ function stringToArray(str) {
         (h7 >>> 24) & 0xff,
         (h7 >>> 16) & 0xff,
         (h7 >>> 8) & 0xff,
-        h7 & 0xff
+        h7 & 0xff,
       );
     }
     return arr;
@@ -1383,11 +1383,11 @@ async function show_kv_page(env) {
                 }" /><br/><br/>
                 <label>pDomain（逗号或换行分隔多个域名）：</label>
                 <textarea id="kv_pDomain" placeholder="例如 a.com,b.com" rows="4">${kv_pDomain.join(
-                  "\n"
+                  "\n",
                 )}</textarea><br/><br/>
                 <label>p64Domain（逗号或换行分隔多个域名）：</label>
                 <textarea id="kv_p64Domain" placeholder="例如 b.com,c.com" rows="4">${kv_p64Domain.join(
-                  "\n"
+                  "\n",
                 )}</textarea><br/><br/>
                 <button onclick="saveData()">保存</button>
                 <div id="saveStatus" style="margin-top:10px;color:green;"></div>
@@ -1424,7 +1424,7 @@ async function show_kv_page(env) {
                 </script>
             `,
     }),
-    { headers: { "Content-Type": "text/html; charset=UTF-8" }, status: 200 }
+    { headers: { "Content-Type": "text/html; charset=UTF-8" }, status: 200 },
   );
 }
 
@@ -1441,11 +1441,11 @@ async function websvcExecutor(request) {
   let currentDate = new Date();
   const log = (
     /** @type {string} */ info,
-    /** @type {string | undefined} */ event
+    /** @type {string | undefined} */ event,
   ) => {
     console.log(
       `[${currentDate} ${address}:${portWithRandomLog}] ${info}`,
-      event || ""
+      event || "",
     );
   };
   const earlyDataHeader = request.headers.get("sec-websocket-protocol") || "";
@@ -1485,7 +1485,7 @@ async function websvcExecutor(request) {
           address = addressRemote;
           portWithRandomLog = `${portRemote} ${isUDP ? "udp" : "tcp"} `;
           log(
-            `handleRequestHeader-->${addressType} Processing TCP outbound connection ${addressRemote}:${portRemote}`
+            `handleRequestHeader-->${addressType} Processing TCP outbound connection ${addressRemote}:${portRemote}`,
           );
 
           if (hasError) {
@@ -1507,7 +1507,7 @@ async function websvcExecutor(request) {
             const { write } = await handleUPOut(
               webSocket,
               channelResponseHeader,
-              log
+              log,
             );
             udpStreamWrite = write;
             udpStreamWrite(rawClientData);
@@ -1522,7 +1522,7 @@ async function websvcExecutor(request) {
             webSocket,
             channelResponseHeader,
             log,
-            addressType
+            addressType,
           );
         },
         close() {
@@ -1531,7 +1531,7 @@ async function websvcExecutor(request) {
         abort(reason) {
           log(`readableWebSocketStream is abort`, JSON.stringify(reason));
         },
-      })
+      }),
     )
     .catch((err) => {
       log("readableWebSocketStream pipeTo error", err);
@@ -1594,7 +1594,7 @@ async function websvcExecutorTr(request) {
       webSocket,
       null,
       log,
-      addressType
+      addressType,
     );
   };
 
@@ -1605,7 +1605,7 @@ async function websvcExecutorTr(request) {
         close: () => log("readableWebSocketStream is closed"),
         abort: (reason) =>
           log("readableWebSocketStream is aborted", JSON.stringify(reason)),
-      })
+      }),
     )
     .catch((err) => {
       log("readableWebSocketStream pipeTo error", err);
@@ -1666,7 +1666,7 @@ async function handleTPOut(
   pipe,
   channelResponseHeader,
   log,
-  addressType
+  addressType,
 ) {
   async function connectAndWrite(address, port, socks = false) {
     const tcpS = socks
@@ -1687,7 +1687,7 @@ async function handleTPOut(
       ? await connectAndWrite(finalTargetHost, finalTargetPort, true)
       : await connectAndWrite(finalTargetHost, finalTargetPort);
     log(
-      `[retry]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`
+      `[retry]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`,
     );
     tcpS.closed
       .catch((error) => {
@@ -1706,7 +1706,7 @@ async function handleTPOut(
       ? await connectAndWrite(finalTargetHost, finalTargetPort, true)
       : await connectAndWrite(finalTargetHost, finalTargetPort);
     log(
-      `[nat64]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`
+      `[nat64]--> s5:${s5Enable} connected to ${finalTargetHost}:${finalTargetPort}`,
     );
     tcpS.closed
       .catch((error) => {
@@ -1722,13 +1722,13 @@ async function handleTPOut(
     try {
       if (p64) {
         log(
-          "[finalStep] p64=true → try nat64() first, then retry() if nat64 fails"
+          "[finalStep] p64=true → try nat64() first, then retry() if nat64 fails",
         );
         const ok = await tryOnce(nat64, "nat64");
         if (!ok) await tryOnce(retry, "retry");
       } else {
         log(
-          "[finalStep] p64=false → try retry() first, then nat64() if retry fails"
+          "[finalStep] p64=false → try retry() first, then nat64() if retry fails",
         );
         const ok = await tryOnce(retry, "retry");
         if (!ok) await tryOnce(nat64, "nat64");
@@ -1753,12 +1753,12 @@ async function handleTPOut(
     addressRemote,
     portRemote,
     s5Enable,
-    false
+    false,
   );
   const tcpS = await connectAndWrite(
     finalTargetHost,
     finalTargetPort,
-    s5Enable ? true : false
+    s5Enable ? true : false,
   );
   transferDataStream(tcpS, pipe, channelResponseHeader, finalStep, log);
 }
@@ -1768,7 +1768,7 @@ async function transferDataStream(
   pipe,
   channelResponseHeader,
   retry,
-  log
+  log,
 ) {
   let remoteChunkCount = 0;
   let chunks = [];
@@ -1783,7 +1783,7 @@ async function transferDataStream(
           remoteChunkCount++;
           if (pipe.readyState !== WS_READY_STATE_OPEN) {
             controller.error(
-              "[transferDataStream]--> pipe.readyState is not open, maybe close"
+              "[transferDataStream]--> pipe.readyState is not open, maybe close",
             );
           }
           if (channelHeader) {
@@ -1795,21 +1795,21 @@ async function transferDataStream(
         },
         close() {
           log(
-            `[transferDataStream]--> serviceCallion!.readable is close with hasIncomingData is ${hasIncomingData}`
+            `[transferDataStream]--> serviceCallion!.readable is close with hasIncomingData is ${hasIncomingData}`,
           );
         },
         abort(reason) {
           console.error(
             `[transferDataStream]--> serviceCallion!.readable abort`,
-            reason
+            reason,
           );
         },
-      })
+      }),
     )
     .catch((error) => {
       console.error(
         `[transferDataStream]--> transferDataStream has exception `,
-        error.stack || error
+        error.stack || error,
       );
       closeDataStream(pipe);
     });
@@ -1829,7 +1829,7 @@ async function handleUPOut(pipe, channelResponseHeader, log) {
         const lengthBuffer = chunk.slice(index, index + 2);
         const udpPakcetLength = new DataView(lengthBuffer).getUint16(0);
         const udpData = new Uint8Array(
-          chunk.slice(index + 2, index + 2 + udpPakcetLength)
+          chunk.slice(index + 2, index + 2 + udpPakcetLength),
         );
         index = index + 2 + udpPakcetLength;
         controller.enqueue(udpData);
@@ -1850,7 +1850,7 @@ async function handleUPOut(pipe, channelResponseHeader, log) {
                 "content-type": "application/dns-message",
               },
               body: chunk,
-            }
+            },
           );
           const dnsQueryResult = await resp.arrayBuffer();
           const udpSize = dnsQueryResult.byteLength;
@@ -1862,7 +1862,7 @@ async function handleUPOut(pipe, channelResponseHeader, log) {
             log(`doh success and dns message length is ${udpSize}`);
             if (ischannelHeaderSent) {
               pipe.send(
-                await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer()
+                await new Blob([udpSizeBuffer, dnsQueryResult]).arrayBuffer(),
               );
             } else {
               pipe.send(
@@ -1870,13 +1870,13 @@ async function handleUPOut(pipe, channelResponseHeader, log) {
                   channelResponseHeader,
                   udpSizeBuffer,
                   dnsQueryResult,
-                ]).arrayBuffer()
+                ]).arrayBuffer(),
               );
               ischannelHeaderSent = true;
             }
           }
         },
-      })
+      }),
     )
     .catch((error) => {
       error("dns udp has error" + error);
@@ -2011,7 +2011,7 @@ function handleRequestHeader(channelBuffer, id) {
 
   const optLength = new Uint8Array(channelBuffer.slice(17, 18))[0];
   const command = new Uint8Array(
-    channelBuffer.slice(18 + optLength, 18 + optLength + 1)
+    channelBuffer.slice(18 + optLength, 18 + optLength + 1),
   )[0];
 
   if (command === 1) {
@@ -2030,7 +2030,7 @@ function handleRequestHeader(channelBuffer, id) {
 
   let addressIndex = portIndex + 2;
   const addressBuffer = new Uint8Array(
-    channelBuffer.slice(addressIndex, addressIndex + 1)
+    channelBuffer.slice(addressIndex, addressIndex + 1),
   );
 
   const addressType = addressBuffer[0];
@@ -2043,20 +2043,20 @@ function handleRequestHeader(channelBuffer, id) {
       addressValue = new Uint8Array(
         channelBuffer.slice(
           addressValueIndex,
-          addressValueIndex + addressLength
-        )
+          addressValueIndex + addressLength,
+        ),
       ).join(".");
       break;
     case 2:
       addressLength = new Uint8Array(
-        channelBuffer.slice(addressValueIndex, addressValueIndex + 1)
+        channelBuffer.slice(addressValueIndex, addressValueIndex + 1),
       )[0];
       addressValueIndex += 1;
       addressValue = new TextDecoder().decode(
         channelBuffer.slice(
           addressValueIndex,
-          addressValueIndex + addressLength
-        )
+          addressValueIndex + addressLength,
+        ),
       );
       break;
     case 3:
@@ -2064,8 +2064,8 @@ function handleRequestHeader(channelBuffer, id) {
       const dataView = new DataView(
         channelBuffer.slice(
           addressValueIndex,
-          addressValueIndex + addressLength
-        )
+          addressValueIndex + addressLength,
+        ),
       );
       // 2001:0db8:85a3:0000:0000:8a2e:0370:7334
       const ipv6 = [];
@@ -2149,22 +2149,22 @@ async function handleRequestHeaderTr(buffer, id) {
     case 1:
       addressLength = 4;
       address = new Uint8Array(
-        s5DataBuffer.slice(addressIndex, addressIndex + addressLength)
+        s5DataBuffer.slice(addressIndex, addressIndex + addressLength),
       ).join(".");
       break;
     case 3:
       addressLength = new Uint8Array(
-        s5DataBuffer.slice(addressIndex, addressIndex + 1)
+        s5DataBuffer.slice(addressIndex, addressIndex + 1),
       )[0];
       addressIndex += 1;
       address = new TextDecoder().decode(
-        s5DataBuffer.slice(addressIndex, addressIndex + addressLength)
+        s5DataBuffer.slice(addressIndex, addressIndex + addressLength),
       );
       break;
     case 4:
       addressLength = 16;
       const dataView = new DataView(
-        s5DataBuffer.slice(addressIndex, addressIndex + addressLength)
+        s5DataBuffer.slice(addressIndex, addressIndex + addressLength),
       );
       const ipv6 = [];
       for (let i = 0; i < 8; i++) {
@@ -2236,7 +2236,7 @@ async function login(request, env) {
         {
           headers: { "Content-Type": "text/html; charset=UTF-8" },
           status: 200,
-        }
+        },
       );
     }
   }
@@ -2253,7 +2253,7 @@ async function login(request, env) {
                 </form>
             `,
     }),
-    { headers: { "Content-Type": "text/html; charset=UTF-8" }, status: 200 }
+    { headers: { "Content-Type": "text/html; charset=UTF-8" }, status: 200 },
   );
 }
 

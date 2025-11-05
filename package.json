@@ -6,10 +6,10 @@
   "type": "module",
   "scripts": {
     "format": "prettier --write \"**/*.{js,json,css,md,yaml}\"",
-    "build": "rollup -c",
+    "build": "cross-env NODE_ENV=production rollup -c",
     "build:prod": "cross-env NODE_ENV=production rollup -c",
-    "build:dev": "rollup -c",
-    "dev": "rollup -c -w",
+    "build:dev": "cross-env NODE_ENV=production rollup -c",
+    "dev": "cross-env NODE_ENV=production  -c -w",
     "clean": "rimraf dist",
     "analyze": "pnpm run build:prod && ls -la dist/"
   },

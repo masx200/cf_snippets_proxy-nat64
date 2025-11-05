@@ -18,7 +18,7 @@ export default defineConfig([
       //   sourcemap: !isProduction,
       // },
       {
-        file: "dist/snippets.min.js",
+        file: "snippets.min.js",
         format: "es",
         exports: "default",
         sourcemap: false,
@@ -69,7 +69,7 @@ export default defineConfig([
       //   sourcemap: !isProduction,
       // },
       {
-        file: "dist/worker.min.js",
+        file: "worker.min.js",
         format: "es",
         exports: "default",
         sourcemap: false,
