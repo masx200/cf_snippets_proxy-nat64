@@ -2,7 +2,7 @@
   "name": "cf_snippets_proxy-nat64",
   "version": "1.0.0",
   "description": "Cloudflare Workers VLESS proxy with NAT64 support",
-  "main": "dist/snippets.js",
+  "main": "snippets.js",
   "type": "module",
   "scripts": {
     "format": "prettier --write \"**/*.{js,json,css,md,yaml}\"",
