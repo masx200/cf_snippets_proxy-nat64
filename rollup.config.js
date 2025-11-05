@@ -24,18 +24,18 @@ export default defineConfig([
         sourcemap: false,
         plugins: isProduction
           ? [
-              terser({
-                compress: {
-                  drop_console: true,
-                  drop_debugger: true,
-                  pure_funcs: ["console.debug"],
-                },
-                mangle: {
-                  keep_classnames: true,
-                  keep_fnames: false,
-                },
-              }),
-            ]
+            terser({
+              compress: {
+                drop_console: true,
+                drop_debugger: true,
+                pure_funcs: ["console.debug"],
+              },
+              mangle: {
+                keep_classnames: true,
+                keep_fnames: false,
+              },
+            }),
+          ]
           : [],
       },
     ],
@@ -75,18 +75,18 @@ export default defineConfig([
         sourcemap: false,
         plugins: isProduction
           ? [
-              terser({
-                compress: {
-                  drop_console: true,
-                  drop_debugger: true,
-                  pure_funcs: ["console.debug"],
-                },
-                mangle: {
-                  keep_classnames: true,
-                  keep_fnames: false,
-                },
-              }),
-            ]
+            terser({
+              compress: {
+                drop_console: true,
+                drop_debugger: true,
+                pure_funcs: ["console.debug"],
+              },
+              mangle: {
+                keep_classnames: true,
+                keep_fnames: false,
+              },
+            }),
+          ]
           : [],
       },
     ],

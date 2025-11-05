@@ -72,8 +72,7 @@ export default {
     // 处理 WebSocket 请求（VLESS 代理的主要流量）
     if (req.headers.get("Upgrade")?.toLowerCase() === "websocket") {
       return await handle_ws(req);
-    }
-    // 处理 HTTP GET 请求
+    } // 处理 HTTP GET 请求
     else if (req.method === "GET") {
       // 根路径：返回成功页面
       if (u.pathname === "/") {
@@ -82,8 +81,7 @@ export default {
           status: 200,
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
-      }
-      // 订阅路径：生成 VLESS 订阅链接
+      } // 订阅路径：生成 VLESS 订阅链接
       // 格式: /{UUID}
       else if (u.pathname.toLowerCase().includes(`/${UUID}`)) {
         return await handle_sub(req);
@@ -159,9 +157,11 @@ function gen_links(workerDomain) {
     // 拼接 VLESS 链接
     // 格式: vless://UUID@server:port?params#name
     links.push(
-      `${proto}://${UUID}@${item}?${wsParams.toString()}#${encodeURIComponent(
-        name,
-      )}`,
+      `${proto}://${UUID}@${item}?${wsParams.toString()}#${
+        encodeURIComponent(
+          name,
+        )
+      }`,
     );
   });
 
@@ -197,8 +197,8 @@ function convertToRouteX(ipv4Address) {
 
   // 构造 IPv6 的后缀部分
   // 格式: aabb:ccdd (每两个字节一组)
-  const ipv6Tail =
-    `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`.toLowerCase();
+  const ipv6Tail = `${hexParts[0]}${hexParts[1]}:${hexParts[2]}${hexParts[3]}`
+    .toLowerCase();
 
   // 组合完整的 IPv6 地址
   const fullIPv6 = `${NAT64_PREFIX}${ipv6Tail}`;
@@ -294,16 +294,16 @@ async function handle_ws(req) {
   // 格式: user:pass@host:port 或 host:port
   const socks5 = path.includes("@")
     ? (() => {
-        const [cred, server] = path.split("@");
-        const [user, pass] = cred.split(":");
-        const [host, port = 443] = server.split(":");
-        return {
-          user,
-          pass,
-          host,
-          port: +port,
-        };
-      })()
+      const [cred, server] = path.split("@");
+      const [user, pass] = cred.split(":");
+      const [host, port = 443] = server.split(":");
+      return {
+        user,
+        pass,
+        host,
+        port: +port,
+      };
+    })()
     : null;
 
   // 设置代理服务器 IP
@@ -460,8 +460,9 @@ async function handle_ws(req) {
           const uuidBytes = new Uint8Array(data.slice(1, 17));
           const expectedUUID = UUID.replace(/-/g, "");
           for (let i = 0; i < 16; i++) {
-            if (uuidBytes[i] !== parseInt(expectedUUID.substr(i * 2, 2), 16))
+            if (uuidBytes[i] !== parseInt(expectedUUID.substr(i * 2, 2), 16)) {
               return;
+            }
           }
 
           // 解析 VLESS 协议头
@@ -482,9 +483,11 @@ async function handle_ws(req) {
           let addr = ""; // 目标地址
           if (type === 1) {
             // IPv4 地址 (4 字节)
-            addr = `${view.getUint8(pos)}.${view.getUint8(pos + 1)}.${view.getUint8(
-              pos + 2,
-            )}.${view.getUint8(pos + 3)}`;
+            addr = `${view.getUint8(pos)}.${view.getUint8(pos + 1)}.${
+              view.getUint8(
+                pos + 2,
+              )
+            }.${view.getUint8(pos + 3)}`;
             pos += 4;
           } else if (type === 2) {
             // 域名 (1 字节长度 + 字符串)
@@ -516,7 +519,7 @@ async function handle_ws(req) {
             const { readable, writable } = new TransformStream({
               transform(chunk, ctrl) {
                 // 解析 UDP 包长度前缀
-                for (let i = 0; i < chunk.byteLength; ) {
+                for (let i = 0; i < chunk.byteLength;) {
                   const len = new DataView(chunk.slice(i, i + 2)).getUint16(0);
                   ctrl.enqueue(chunk.slice(i + 2, i + 2 + len));
                   i += 2 + len;
@@ -571,13 +574,11 @@ async function handle_ws(req) {
                 });
                 await sock.opened;
                 break;
-              }
-              // 方式2: SOCKS5 代理
+              } // 方式2: SOCKS5 代理
               else if (method === "s5" && socks5) {
                 sock = await socks5Connect(addr, port);
                 break;
-              }
-              // 方式3: 代理服务器
+              } // 方式3: 代理服务器
               else if (method === "proxy" && PROXY_IP) {
                 const [ph, pp = port] = PROXY_IP.split(":");
                 sock = connect({
@@ -586,8 +587,7 @@ async function handle_ws(req) {
                 });
                 await sock.opened;
                 break;
-              }
-              // 方式4: NAT64 模式
+              } // 方式4: NAT64 模式
               else if (method === "nat64") {
                 let targetHost = addr;
 

@@ -1,3 +1,229 @@
+# 🌐 Cloudflare Workers VLESS Proxy (NAT64 Edition)
+
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F8E04C?style=flat-square&logo=cloudflare)](https://workers.cloudflare.com/)
+[![VLESS](https://img.shields.io/badge/VLESS-Protocol-4F86F7?style=flat-square)](https://www.v2ray.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
+[![Single File](https://img.shields.io/badge/Architecture-Single--File-orange?style=flat-square)](#architecture)
+
+> 基于 Cloudflare Workers 的轻量级 VLESS 协议代理实现，支持 NAT64
+> 转换和多种连接模式，无需构建工具即可部署。
+
+## ✨ 特性亮点
+
+- 🎯 **单文件架构** - 无需构建工具，直接粘贴部署
+- 🔄 **多模式支持** - direct、SOCKS5、proxy、nat64、auto
+- 🌐 **NAT64 支持** - 自动将 IPv4 转换为 IPv6 NAT64 地址
+- 🔁 **自动回退** - 智能切换连接策略
+- 📡 **订阅生成** - 自动生成 VLESS 订阅链接
+- 🛡️ **UDP 代理** - 支持 DNS over HTTPS 代理
+- ⚡ **零配置** - 开箱即用，最小化配置
+
+## 🚀 快速开始
+
+### 一分钟部署
+
+1. **登录 Cloudflare** - 访问
+   [Cloudflare Dashboard](https://dash.cloudflare.com/)
+2. **创建 Snippets** - 选择域名 → 规则(Rule) → Snippets → 创建新片段
+3. **粘贴代码** - 将 `snippets.js` 内容粘贴到编辑器
+4. **修改 UUID** - 更改默认 UUID 为你的唯一标识符
+5. **保存部署** - 点击保存并部署
+
+```bash
+# 生成新的 UUID
+curl -s https://www.uuidgenerator.net/version4
+```
+
+### 获取订阅链接
+
+部署完成后，访问：
+
+```
+https://your-worker-domain.workers.dev/{YOUR_UUID}
+```
+
+将返回 Base64 编码的 VLESS 订阅链接，直接导入客户端即可使用。
+
+## 📚 连接模式
+
+| 模式     | 描述        | 适用场景                |
+| -------- | ----------- | ----------------------- |
+| `direct` | 直连模式    | 网络环境较好的场景      |
+| `s5`     | SOCKS5 代理 | 需要认证的代理服务器    |
+| `proxy`  | 反向代理    | 通过代理服务器中转      |
+| `nat64`  | NAT64 转换  | IPv4 到 IPv6 的无缝过渡 |
+| `auto`   | 自动模式    | 智能回退，多重保障      |
+
+### 模式配置示例
+
+```javascript
+// 直连模式
+/?mode=direct
+
+// SOCKS5 代理
+/?mode=s5&s5=user:pass@host:port
+
+// NAT64 模式
+/?mode=nat64
+
+// 自动模式（直连优先，失败时回退到 NAT64）
+/?mode=auto&direct&nat64
+
+// 复杂回退链（直连 → SOCKS5 → NAT64）
+/?mode=auto&direct&s5=user:pass@host:port&nat64
+```
+
+## 🏗️ 架构设计
+
+### 核心组件
+
+```
+┌─────────────────────────────────────────────────┐
+│                   snippets.js                     │
+├─────────────────────────────────────────────────┤
+│  fetch()                                         │
+│  ├─ handle_ws()     - WebSocket & VLESS 处理     │
+│  ├─ handle_sub()    - 订阅链接生成               │
+│  └─ convertToRouteX() - NAT64 转换               │
+└─────────────────────────────────────────────────┘
+```
+
+### 关键模块
+
+- **路由处理器** (snippets.js:18-37)
+  - HTTP 请求路由
+  - WebSocket 连接升级
+  - 订阅链接分发
+
+- **WebSocket 处理** (snippets.js:124-416)
+  - VLESS 协议解析
+  - SOCKS5 认证
+  - TCP/UDP 连接管理
+  - 双向数据流传输
+
+- **NAT64 转换** (snippets.js:80-122)
+  - IPv4 → NAT64 IPv6 转换
+  - 域名解析到 NAT64 地址
+
+### 配置常量
+
+```javascript
+// snippets.js:1-16
+const UUID = "1f9d104e-ca0e-4202-ba4b-a0afb969c747"; // 用户标识
+const DEFAULT_PROXY_IP = "bestproxy.030101.xyz:443"; // 默认代理
+const NAT64_PREFIX = "2602:fc59:b0:64::"; // NAT64 前缀
+const BEST_DOMAINS = [/* 优选域名列表 */]; // 订阅域名
+```
+
+## 🔧 配置选项
+
+### 基础配置
+
+修改 `snippets.js` 顶部常量：
+
+| 参数               | 说明            | 默认值                     |
+| ------------------ | --------------- | -------------------------- |
+| `UUID`             | VLESS 用户标识  | `1f9d104e-...`             |
+| `DEFAULT_PROXY_IP` | 默认代理服务器  | `bestproxy.030101.xyz:443` |
+| `NAT64_PREFIX`     | NAT64 IPv6 前缀 | `2602:fc59:b0:64::`        |
+| `BEST_DOMAINS`     | 优选域名列表    | `[]`                       |
+
+### 自定义代理服务器
+
+```javascript
+let paddrs = [
+  "bestproxy.030101.xyz:443",
+  atob("cHJveHlpcC5hbWNsdWJzLmNhbWR2ci5vcmc="), // 代理服务器 1
+  atob("cHJveHlpcC5hbWNsdWJzLmtvem93LmNvbQ=="), // 代理服务器 2
+  ...backupIPs.map((ip) => `${ip.domain}:${ip.port}`),
+];
+```
+
+## 📖 使用指南
+
+### 客户端配置
+
+#### V2RayN (Windows)
+
+1. 复制订阅链接
+2. 打开 V2RayN → 服务器 → 从剪贴板导入
+3. 测试连接并启用
+
+#### v2rayU (macOS)
+
+1. 获取订阅链接
+2. 打开 v2rayU → 订阅 → 添加订阅
+3. 更新订阅并选择节点
+
+#### Quantumult X (iOS)
+
+1. 生成订阅链接
+2. 打开 Quantumult X → 配置文件 → 订阅
+3. 粘贴链接并同步
+
+### 测试不同模式
+
+```bash
+# 测试直连
+curl -x http://localhost:8080 http://www.google.com
+
+# 测试 NAT64
+curl -6 http://www.google.com
+
+# 测试 SOCKS5
+curl -x socks5://user:pass@host:port http://www.google.com
+```
+
+## 🗂️ 项目结构
+
+```
+cf_snippets_proxy-nat64/
+├── snippets.js          # 核心源文件（单文件架构）
+├── nat64Prefix.txt      # NAT64 前缀配置
+├── backupIPs.js         # 备用 IP 列表
+├── README.md            # 项目文档
+├── CLAUDE.md            # Claude Code 指导
+└── LICENSE              # MIT 许可证
+```
+
+## 📝 更新历史
+
+| 版本         | 日期       | 变更内容                        |
+| ------------ | ---------- | ------------------------------- |
+| **20251102** | 2025-11-02 | ✨ 重新添加 NAT64 模式支持      |
+| **20250906** | 2025-09-06 | 🗑️ 移除"仅ProxyIP"模式          |
+| **20250905** | 2025-09-05 | ➕ 添加多种代理模式配置         |
+| **20250718** | 2025-07-18 | 🔄 移除 NAT64，添加 SOCKS5 支持 |
+| **20250527** | 2025-05-27 | ➕ 添加 NAT64 功能              |
+| **20240417** | 2024-04-17 | 🔧 修复错误代码 1101            |
+
+## 🤝 致谢
+
+- [ymyuuu/workers-vless](https://github.com/ymyuuu/workers-vless) - 原始实现
+- [jackrun123/cf_snippets_proxy](https://github.com/jackrun123/cf_snippets_proxy) -
+  订阅功能
+
+## ⚠️ 免责声明
+
+- 本项目仅供学习和研究使用
+- 使用者需遵守当地法律法规
+- 作者不承担使用该项目的任何后果
+- 请在下载后 24 小时内删除
+
+## 📄 许可证
+
+本项目基于 [MIT 许可证](./LICENSE) 开源。
+
+---
+
+<div align="center">
+
+**[⬆ 回到顶部](#-cloudflare-workers-vless-proxy-nat64-edition)**
+
+Made with ❤️ by the community
+
+</div>
+
 视频教程：https://www.youtube.com/watch?v=cSCIWjTsL3Y
 
 交流TG群：https://t.me/jackrun
@@ -133,7 +359,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ## ⚙️ 二、Workers 部署方法 [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=165s)
 
@@ -185,7 +411,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ## 📦三、Pages 上传 部署方法 **(最佳推荐!!!)** [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=1100s)
 
@@ -240,7 +466,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ## 🧰四、Pages GitHub 部署方法 **(不推荐)** [视频教程](https://www.youtube.com/watch?v=dPH63nITA0M&t=654s)
 
@@ -293,16 +519,16 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ## 🔧五、变量说明 [视频教程](https://www.youtube.com/watch?v=i-XnnP-MptY&t=468s)
 
-| 变量名 | 示例                                         | 必填 | 备注                                                                                          | YT  |
-| ------ | -------------------------------------------- | ---- | --------------------------------------------------------------------------------------------- | --- |
-| ID     | ec872d8f-72b0-4a04-b612-0327d85e18ed（默认） | ✅   | 支持Cloudflare的KV存储桶设置 [在线获取UUID](https://1024tools.com/uuid) VLESS、Trojan节点共用 |     |
-| D_URL  | https://cloudflare-dns.com/dns-query         | ❌   | DNS解析获取作用，小白勿用                                                                     |     |
+| 变量名 | 示例                                         | 必填 | 备注                                                                                          | YT |
+| ------ | -------------------------------------------- | ---- | --------------------------------------------------------------------------------------------- | -- |
+| ID     | ec872d8f-72b0-4a04-b612-0327d85e18ed（默认） | ✅   | 支持Cloudflare的KV存储桶设置 [在线获取UUID](https://1024tools.com/uuid) VLESS、Trojan节点共用 |    |
+| D_URL  | https://cloudflare-dns.com/dns-query         | ❌   | DNS解析获取作用，小白勿用                                                                     |    |
 
-##
+## 
 
 ## 🧩六、节点订阅配置 [Vercel部署视频教程](https://www.youtube.com/playlist?list=PLGVQi7TjHKXZGODTvB8DEervrmHANQ1AR) [Cloudfare部署视频教程](https://youtu.be/f8ZTvv4u3Pw)
 
@@ -385,7 +611,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ## 🛠已适配订阅工具 [点击进入视频教程](https://youtu.be/xGOL57cmvaw) [点进进入karing视频教程](https://youtu.be/M3vLLBWfuFg)
 
@@ -436,7 +662,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 
 </details>
 
-##
+## 
 
 ### 🙏感谢
 
@@ -448,7 +674,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 (**55元1000GB不限时**)✅畅爽晚高峰 解锁ChatGPT、全流媒体(送小火箭)
 </br>🌐官网：[https://llgjc1.com](https://llgjc1.com/#/register?code=bIUDEPTu)
 
-#
+# 
 
 <center>
 <details><summary><strong> ☕ [点击展开] 赞赏支持 ~🧧</strong></summary>
@@ -464,7 +690,7 @@ X等工具中订阅使用。Cloudflare Workers 和 Pages
 </details>
 </center>
 
-#
+# 
 
 ⚠️免责声明:
 

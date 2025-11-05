@@ -1,6 +1,7 @@
 # Build System Guide
 
-This project uses Pnpm and Rollup for building and optimizing the Cloudflare Workers proxy scripts.
+This project uses Pnpm and Rollup for building and optimizing the Cloudflare
+Workers proxy scripts.
 
 ## Prerequisites
 
@@ -112,7 +113,8 @@ The build system uses `NODE_ENV` to control build behavior:
 
 ### Terser Configuration
 
-To customize compression settings, modify the `terser()` options in `rollup.config.js`:
+To customize compression settings, modify the `terser()` options in
+`rollup.config.js`:
 
 ```javascript
 terser({
@@ -130,4 +132,5 @@ terser({
 
 ### Build Targets
 
-To add additional build targets or modify existing ones, edit the configuration arrays in `rollup.config.js`.
+To add additional build targets or modify existing ones, edit the configuration
+arrays in `rollup.config.js`.
